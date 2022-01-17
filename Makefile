@@ -1,3 +1,5 @@
+#!/usr/bin/make -f
+
 COLOR_RED="\033[0;31m"
 COLOR_GREEN="\033[0;32m"
 COLOR_YELLOW="\033[0;33m"
@@ -78,4 +80,8 @@ re: fclean all
 
 
 .PHONY: lib clean fclean all re multi
+
+INSTALLATION_DIRECTORY=/opt/smartcalc/v1.0
+
+PHONY: all, install, uninstall, clean, distclean, mostyclean, realclean, TAGS, info, dvi, dist, test, gcov_report
 #all, clean, test, s21_matrix.a, gcov_report
