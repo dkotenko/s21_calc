@@ -7,7 +7,10 @@ COLOR_RESET="\033[0m"
 
 NAME=smartcalc
 HEADERS_DIR = includes
-HEADERS_FILES=$(NAME).h
+HEADERS_FILES=\
+	$(NAME).h \
+	dlist.h
+
 SRCS_DIR=src
 
 SRCS_FILES=main.c
