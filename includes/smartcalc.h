@@ -4,6 +4,15 @@
 #include "dlist.h"
 #include "types.h"
 
+typedef struct s_input_str
+{
+    int i;
+    int len;
+    int start;
+    char *s;
+}   t_input_string;
+
+
 typedef struct s_token {
     int token_type;
     int token;

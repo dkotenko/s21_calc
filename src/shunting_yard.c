@@ -1,7 +1,10 @@
 #include <regex.h>
 #include <stdio.h>
-#include "smartcalc.h"
- 
+#include <string.h>
+//#include "smartcalc.h"
+
+int debug;
+
 typedef struct {
 	const char *s;
 	int len, prec, assoc;
@@ -40,9 +43,13 @@ int l_queue, l_stack;
 #define qpush(x) queue[l_queue++] = x
 #define spush(x) stack[l_stack++] = x
 #define spop()   stack[--l_stack]
+#define WHITE_SPACE " \t"
  
 void display(const char *s)
 {
+	if (!debug) {
+		return ;
+	}
 	int i;
 	printf("\033[1;1H\033[JText | %s", s);
 	printf("\nStack| ");
@@ -71,7 +78,6 @@ int init(void)
 	for (i = 0, p = pat_arg; p[i].str; i++)
 		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
 			fail("comp", p[i].str);
- 
 	return 1;
 }
  
@@ -80,7 +86,9 @@ pat_t* match(const char *s, pat_t *p, str_tok_t * t, const char **e)
 	int i;
 	regmatch_t m;
  
-	while (*s == ' ') s++;
+	while (*s == ' ' || *s == '\t') {
+		s++;
+	} 
 	*e = s;
  
 	if (!*s) return &pat_eos;
@@ -112,6 +120,7 @@ int parse(const char *s) {
 		}
 		qpush(tok);
 		display(s);
+ 
  
 re_op:		p = match(s, pat_ops, &tok, &s);
 		if (!p) fail("parse op", s);
@@ -158,8 +167,10 @@ re_op:		p = match(s, pat_ops, &tok, &s);
 	return 1;
 }
  
-int main()
+int main(int ac, char **av)
 {
+	debug = ac == 2 && !strcmp(av[1], "-d") ? 1 : 0;
+
 	int i;
 	const char *tests[] = { 
 		"3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3",	/* RC mandated: OK */
@@ -168,14 +179,18 @@ int main()
 		"(((((((1+2+3**(4 + 5))))))",		/* bad parens */
 		"a^(b + c/d * .1e5)!",			/* unknown op */
 		"(1**2)**3",				/* OK */
-		"2 + 2 *",				/* unexpected eol */
+		"2 + 2 *",
+		"(1) * (2+2*(2+3))",			/* unexpected eol */
 		0
 	};
  
-	if (!init()) return 1;
+	if (!init()) {
+		return 1;
+	}	
+	
 	for (i = 0; tests[i]; i++) {
 		printf("Testing string `%s'   <enter>\n", tests[i]);
-		getchar();
+		//getchar();
  
 		printf("string `%s': %s\n\n", tests[i],
 			parse(tests[i]) ? "Ok" : "Error");
