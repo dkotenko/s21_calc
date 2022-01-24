@@ -16,7 +16,7 @@ t_dlist_node	*t_dlist_node_new(void *data, int size)
 {
 	t_dlist_node	*new;
 
-	new = (t_dlist_node *)ft_memalloc(sizeof(t_dlist_node));
+	new = (t_dlist_node *)malloc(sizeof(t_dlist_node));
 	new->data = data;
 	new->prev = NULL;
 	new->next = NULL;

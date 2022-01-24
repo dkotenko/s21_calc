@@ -13,6 +13,10 @@
 #ifndef DLIST_H
 # define DLIST_H
 
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct s_dlist_node
 {
 	struct s_dlist_node	*next;

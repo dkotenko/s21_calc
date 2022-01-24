@@ -13,7 +13,14 @@ HEADERS_FILES=\
 
 SRCS_DIR=src
 
-SRCS_FILES=main.c
+SRCS_FILES=main.c \
+	shunting_yard.c \
+	dlist.c \
+	dlist_free.c \
+	dlist_node.c \
+	ft_strdup.c \
+	ft_strndup.c \
+	ft_strnlen.c
 
 SRCS=$(addprefix $(SRCS_DIR)/, $(SRCS_FILES))
 HEADERS = $(addprefix $(HEADERS_DIR)/, $(HEADERS_FILES))
@@ -30,7 +37,7 @@ TEST_OBJS=$(TEST_SRCS:%.c=%.o)
 
 REPORT_NAME=report.html
 
-CC=gcc -std=c11 # -Wall -Wextra -Werror 
+CC=gcc -std=c11 -Wall -Wextra -Werror 
 CC_GCOV=gcc -Wall -Wextra -Werror -std=c11 \
 -fcf-protection=full -static-libgcc --coverage -lgcov
 THREADS = 8

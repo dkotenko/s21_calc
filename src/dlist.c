@@ -16,7 +16,7 @@ t_dlist	*t_dlist_new(void)
 {
 	t_dlist		*new;
 
-	new = (t_dlist *)ft_memalloc(sizeof(t_dlist));
+	new = (t_dlist *)malloc(sizeof(t_dlist));
 	new->size = 0;
 	new->head = NULL;
 	new->tail = NULL;
@@ -57,7 +57,7 @@ t_dlist_node	*t_dlist_get(t_dlist *list, void *value)
 	tmp = list->head;
 	while (tmp != NULL)
 	{
-		if (!ft_memcmp(tmp->data, value, tmp->data_size))
+		if (!memcmp(tmp->data, value, tmp->data_size))
 			return tmp;
 		tmp = tmp->next;
 	}

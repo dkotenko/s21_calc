@@ -1,21 +1,34 @@
 #ifndef SMARTCALC_H
 #define SMARTCALC_H
 
+#include <regex.h>
 #include "dlist.h"
 #include "types.h"
-
-typedef struct s_input_str
-{
-    int i;
-    int len;
-    int start;
-    char *s;
-}   t_input_string;
-
+#include <string.h>
 
 typedef struct s_token {
-    int token_type;
-    int token;
+	const char *s;
+	int len;
+	int precedence;
+	int assoc;
+} t_token;
+ 
+typedef struct s_pattern {
+	const char * str;
+	int assoc;
+	int precedence;
+	regex_t re;
+} t_pattern;
+ 
+enum assoc {
+	A_NONE,
+	A_L,
+	A_R
+};
 
-}   t_token;
+int init(void);
+int parse(const char *s);
+char	*ft_strdup(const char *src);
+char	*ft_strndup(const char *src, size_t n);
+size_t	ft_strnlen(const char *s, size_t maxlen);
 #endif

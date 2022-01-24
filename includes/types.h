@@ -30,7 +30,7 @@ enum bracket {
     LBRACKET,
     RBRACKET,
     BRACKETS_NUM
-}
+};
 
 enum token_type {
     OPERAND,

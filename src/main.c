@@ -2,71 +2,36 @@
 #include <stdio.h>
 #include <string.h>
 
-char    *parse_letter(char *s, int *pointer_position, int len_s) {
-    int i = *pointer_position;
+int debug;
 
-    if (s[i] == 'x') {
-        return ;
-    } else if (!strcmp("mod", s + i)) {
-        return ;
-    } else if (!strcmp("sin", s + i)) {
-
-    } else if (!strcmp("con", s + i)) {
-
-    } else if (!strcmp("tan", s + i)) {
-    
-    } else if (!strcmp("asin", s + i)) {
-
-    } else if (!strcmp("acos", s + i)) {
-
-    } else if (!strcmp("atan", s + i)) {
-
-    } else if (!strcmp("sqrt", s + i)) {
-
-    } else if (!strcmp("log", s + i)) {
-    
-    } else if (!strcmp("ln", s + i)) {
-
-    } else {
-        handle_error();
-    }
-    parse_expression()
-    parse_bracket()
-}
-
-
-char    *lexer(char *s)
+int main(int ac, char **av)
 {
-    int len_s = strlen(s);
-    int i = 0;
-    t_dlist *tokens = t_dlist_new();
-    while (s[i]) {
-        if isalpha(s[i]) {
-            parse_letter(s, &i, len_s);
-        } else if (isdigit(s[i])) {
-            parse_number(s, &i);
-        } else if (strchr(OPERANDS,s[i])) {
-            parse_operand(s, &i);
-        } else if (s[i] == '(' || s[i] == ')') {
-            parse_bracket();
-        } else {
-            handle_error((s, &i);
-        }
-        i++;
-    }
-    return NULL;
-}
+	debug = ac == 2 && !strcmp(av[1], "-d") ? 1 : 0;
 
-char *calculate(char *s)
-{
-    char *result = lexer(s);
-    return result;
-}
-
-int main() {
-    char *s = "1 + 1";
-
-    char *result = calculate(s);
-    printf("result: %s\n", result);
-    return 0;
+	int i;
+	const char *tests[] = { 
+		"3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3",	/* RC mandated: OK */
+		"123",					/* OK */
+		"3+4 * 2 / ( 1 - 5 ) ^ 2 ^ 3.14",	/* OK */
+		"(((((((1+2+3**(4 + 5))))))",		/* bad parens */
+		"a^(b + c/d * .1e5)",			/* unknown op */
+		"(1**2)**3",				/* OK */
+		"2 + 2 *",
+		"(1) * (2+2*(2+3))",			/* unexpected eol */
+		0
+	};
+ 
+	if (!init()) {
+		return 1;
+	}	
+	
+	for (i = 0; tests[i]; i++) {
+		printf("Testing string `%s'   <enter>\n", tests[i]);
+		//getchar();
+ 
+		printf("string `%s': %s\n\n", tests[i],
+			parse(tests[i]) ? "Ok" : "Error");
+	}
+ 
+	return 0;
 }
