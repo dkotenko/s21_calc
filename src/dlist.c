@@ -50,7 +50,7 @@ t_dlist	*t_dlist_remove_node(t_dlist *list, t_dlist_node *node)
 	return (list);
 }
 
-t_dlist_node	*t_dlist_get(t_dlist *list, void *value)
+t_dlist_node	*t_dlist_get_by_val(t_dlist *list, void *value)
 {
 	t_dlist_node	*tmp;
 
@@ -62,4 +62,17 @@ t_dlist_node	*t_dlist_get(t_dlist *list, void *value)
 		tmp = tmp->next;
 	}
 	return NULL;
+}
+
+t_dlist_node	*t_dlist_get_by_index(t_dlist *list, int index)
+{
+	t_dlist_node	*tmp;
+	int		i;
+
+	tmp = list->head;
+	while (tmp != NULL && i++ != index)
+	{
+		tmp = tmp->next;
+	}
+	return tmp;
 }

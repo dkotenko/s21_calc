@@ -10,7 +10,7 @@ int main(int ac, char **av)
 
 	int i;
 	const char *tests[] = { 
-		"3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3",	/* RC mandated: OK */
+		"+3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3",	/* RC mandated: OK */
 		"123",					/* OK */
 		"3+4 * 2 / ( 1 - 5 ) ^ 2 ^ 3.14",	/* OK */
 		"(((((((1+2+3**(4 + 5))))))",		/* bad parens */
@@ -31,6 +31,8 @@ int main(int ac, char **av)
  
 		printf("string `%s': %s\n\n", tests[i],
 			parse(tests[i]) ? "Ok" : "Error");
+		exit(0);
+        //must be 3 4 2 * 1 5 - 2 3 ^ ^ / +
 	}
  
 	return 0;

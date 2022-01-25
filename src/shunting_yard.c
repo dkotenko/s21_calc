@@ -147,8 +147,12 @@ int parse(const char *s) {
 					&& t->precedence <= tok.precedence) {
 						break;
 					}
-				t_dlist_append(dl_queue, t_dlist_pop(dl_stack, dl_stack->head));
-				qpush(spop());
+				t_token tmp = spop();
+				t_dlist_node *tmp_node = t_dlist_pop(dl_stack, dl_stack->tail);
+				t_dlist_append(dl_queue, tmp_node);
+				char *tmp_s = (char *)tmp_node->data;
+				printf("list: %s | stack: %.*s | equal? %s\n", tmp_s, tmp.len, tmp.s, strncmp(tmp_s, tmp.s, tmp.len) ? "NO" : "YES");
+				qpush(tmp);
 				display(s);
 			}
  
@@ -167,16 +171,8 @@ int parse(const char *s) {
 			printf("Queue: %d\n", dl_queue->size);
 			t_dlist_node *tmp = dl_queue->head;
 			while (tmp) {
-				printf("%s \n", (char *)tmp->data);
+				printf("%s ", (char *)tmp->data);
 				tmp = tmp->next;
-			}
-			printf("\n");
-			dl_stack = NULL;
-			dl_queue = NULL;
-
-			
-			for (int o = 0; o < l_queue; o++) {
-				printf("%s ", queue[o].s);
 			}
 			printf("\n");
 			return 1;

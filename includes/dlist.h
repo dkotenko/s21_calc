@@ -48,6 +48,7 @@ void					t_dlist_node_free(void (*free_func)(t_dlist_node *),
 							t_dlist_node *n);
 void					t_dlist_free(t_dlist *dlist,
 							void (*free_func)(t_dlist_node *));
-t_dlist_node			*t_dlist_get(t_dlist *list, void *value);
+t_dlist_node			*t_dlist_get_by_val(t_dlist *list, void *value);
+t_dlist_node			*t_dlist_get_by_index(t_dlist *list, int index);
 
 #endif
