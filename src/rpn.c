@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "smartcalc.h"
 
 void die(const char *msg)
 {
@@ -16,9 +17,7 @@ int depth;
  
 static void push(t_dlist *values, int value)
 {
-	if (depth >= MAX_D) die("stack overflow\n");
-	stack[depth++] = v;
-    values->
+    t_dlist_append(values
 }
  
 static double pop(t_dlist *values)
