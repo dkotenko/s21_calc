@@ -26,8 +26,8 @@ enum assoc {
 	A_R
 };
 
-int init(void);
-int parse(const char *s);
+int		init(void);
+t_dlist *parse(const char *s);
 char	*ft_strdup(const char *src);
 char	*ft_strndup(const char *src, size_t n);
 size_t	ft_strnlen(const char *s, size_t maxlen);

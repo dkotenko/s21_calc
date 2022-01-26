@@ -38,7 +38,13 @@ int l_queue, l_stack;
 #define spush(x) stack[l_stack++] = x
 #define spop()   stack[--l_stack]
 #define WHITE_SPACE " \t"
- 
+
+static void free_node(t_dlist_node * node)
+{
+	free(node->data);
+	free(node);
+}
+
 static void display(const char *s)
 {
 	if (!debug) {
@@ -48,7 +54,7 @@ static void display(const char *s)
 	printf("\033[1;1H\033[JText | %s", s);
 	printf("\nStack| ");
 	for (i = 0; i < l_stack; i++)
-		printf("%.*s ", stack[i].len, stack[i].s); // uses C99 format strings
+		printf("%.*s ", stack[i].len, stack[i].s);
 	printf("\nQueue| ");
 	for (i = 0; i < l_queue; i++)
 		printf("%.*s ", queue[i].len, queue[i].s);
@@ -56,10 +62,12 @@ static void display(const char *s)
 	getchar();
 }
  
-int precedence_booster;
 
- 
-#define fail(s1, s2) {fprintf(stderr, "[Error %s] %s\n", s1, s2); return 0;}
+
+#define fail(s1, s2) { \
+	fprintf(stderr, "[Error %s] %s\n", s1, s2); \
+	return 0; }
+
  
 int init(void)
 {
@@ -73,9 +81,6 @@ int init(void)
 	for (i = 0, p = arguments; p[i].str; i++)
 		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
 			fail("comp", p[i].str);
-
-	dl_stack = t_dlist_new();
-	dl_queue = t_dlist_new();
 	return 1;
 }
  
@@ -103,9 +108,12 @@ static t_pattern* match(const char *s, t_pattern *p, t_token * t, const char **e
 	return 0;
 }
  
-int parse(const char *s) {
+t_dlist *parse(const char *s) {
 	t_pattern *pattern;
 	t_token *t, tok;
+	dl_stack = t_dlist_new();
+	dl_queue = t_dlist_new();
+	int precedence_booster;
  
 	precedence_booster = l_queue = l_stack = 0;
 	display(s);
@@ -150,8 +158,6 @@ int parse(const char *s) {
 				t_token tmp = spop();
 				t_dlist_node *tmp_node = t_dlist_pop(dl_stack, dl_stack->tail);
 				t_dlist_append(dl_queue, tmp_node);
-				char *tmp_s = (char *)tmp_node->data;
-				printf("list: %s | stack: %.*s | equal? %s\n", tmp_s, tmp.len, tmp.s, strncmp(tmp_s, tmp.s, tmp.len) ? "NO" : "YES");
 				qpush(tmp);
 				display(s);
 			}
@@ -165,17 +171,11 @@ int parse(const char *s) {
 
 		if (!pattern->precedence) {
 			display(s);
-			if (precedence_booster)
+			if (precedence_booster) {
 				fail("unmatched (", s);
-
-			printf("Queue: %d\n", dl_queue->size);
-			t_dlist_node *tmp = dl_queue->head;
-			while (tmp) {
-				printf("%s ", (char *)tmp->data);
-				tmp = tmp->next;
 			}
-			printf("\n");
-			return 1;
+			t_dlist_free(dl_stack, free_node);
+			return dl_queue;
 		}
 		t_dlist_append(dl_stack, t_dlist_node_new(ft_strndup(tok.s, tok.len), sizeof(char)));
 		spush(tok);
@@ -185,8 +185,7 @@ int parse(const char *s) {
 	if (pattern->precedence > 0) {
 		fail("unexpected eol", s);
 	}
-
-	
-	return 1;
+	t_dlist_free(dl_stack, free_node);	
+	return dl_queue;
 }
  

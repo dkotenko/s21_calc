@@ -4,6 +4,17 @@
 
 int debug;
 
+static void print_prn_string(t_dlist *rpn)
+{
+	t_dlist_node *tmp = rpn->head;
+	while (tmp) {
+		printf("%s ", (char *)tmp->data);
+		tmp = tmp->next;
+	}
+	printf("\n");
+
+}
+
 int main(int ac, char **av)
 {
 	debug = ac == 2 && !strcmp(av[1], "-d") ? 1 : 0;
@@ -23,14 +34,18 @@ int main(int ac, char **av)
  
 	if (!init()) {
 		return 1;
-	}	
-	
+	}
+
+	t_dlist *rpn_string;
+
 	for (i = 0; tests[i]; i++) {
 		printf("Testing string `%s'   <enter>\n", tests[i]);
 		//getchar();
- 
+
+		rpn_string = parse(tests[i]);
 		printf("string `%s': %s\n\n", tests[i],
-			parse(tests[i]) ? "Ok" : "Error");
+			 rpn_string ? "Ok" : "Error");
+		print_prn_string(rpn_string);
 		exit(0);
         //must be 3 4 2 * 1 5 - 2 3 ^ ^ / +
 	}
