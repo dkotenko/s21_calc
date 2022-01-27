@@ -37,7 +37,7 @@ int l_queue, l_stack;
 #define qpush(x) queue[l_queue++] = x
 #define spush(x) stack[l_stack++] = x
 #define spop()   stack[--l_stack]
-#define WHITE_SPACE " \t"
+#define WHITE_SPACE " \t\n\r\f"
 
 static void free_node(t_dlist_node * node)
 {

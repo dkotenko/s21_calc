@@ -56,7 +56,7 @@ double rpn(char *s)
  
 int main(void)
 {
-	char s[] = " 3 4 2 * 1 5 - 2 3 ^ ^ / + ";
+	char s[] = " +3 4 2 * 1 5 - 2 3 ^ ^ / + ";
 	printf("%g\n", rpn(s));
 	return 0;
 }

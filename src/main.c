@@ -46,6 +46,7 @@ int main(int ac, char **av)
 		printf("string `%s': %s\n\n", tests[i],
 			 rpn_string ? "Ok" : "Error");
 		print_prn_string(rpn_string);
+		printf("RESULT: %f\n", rpn(rpn_string));
 		exit(0);
         //must be 3 4 2 * 1 5 - 2 3 ^ ^ / +
 	}

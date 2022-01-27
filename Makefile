@@ -20,7 +20,10 @@ SRCS_FILES=main.c \
 	dlist_node.c \
 	ft_strdup.c \
 	ft_strndup.c \
-	ft_strnlen.c
+	ft_strnlen.c \
+	ft_memalloc.c \
+	handle_error.c \
+	rpn.c
 
 SRCS=$(addprefix $(SRCS_DIR)/, $(SRCS_FILES))
 HEADERS = $(addprefix $(HEADERS_DIR)/, $(HEADERS_FILES))

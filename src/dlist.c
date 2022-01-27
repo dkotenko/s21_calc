@@ -40,6 +40,9 @@ t_dlist_node	*t_dlist_pop(t_dlist *list, t_dlist_node *node)
 	}
 	node->next = NULL;
 	node->prev = NULL;
+	if (list->size > 0) {
+		list->size--;
+	}
 	return (node);
 }
 

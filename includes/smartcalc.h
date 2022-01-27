@@ -33,4 +33,5 @@ char	*ft_strndup(const char *src, size_t n);
 size_t	ft_strnlen(const char *s, size_t maxlen);
 void	*ft_memalloc(size_t size);
 int	handle_error(char *s);
+double rpn(t_dlist *tokens);
 #endif
