@@ -2,7 +2,19 @@
 #include <stdio.h>
 #include <string.h>
 
-int debug;
+typedef struct {
+	int console;
+} t_args;
+
+static t_args parse_arguments(int ac, char **av)
+{
+	t_args args;
+
+	for (int i = 1; i < ac; i++) {
+		args.console = !strcmp(av[i], "-c") || !strcmp(av[i], "--console") ? 1 : 0;
+	}
+	return args;
+}
 
 static void print_prn_string(t_dlist *rpn)
 {
@@ -15,19 +27,26 @@ static void print_prn_string(t_dlist *rpn)
 
 }
 
+void run_gui()
+{
+	return ;
+}
+
 int main(int ac, char **av)
 {
-	debug = ac == 2 && !strcmp(av[1], "-d") ? 1 : 0;
+	t_args args = parse_arguments(ac, av);
+	if (!args.console) {
+		run_gui();
+	}
 
 	int i;
-	const char *tests[] = { 
+	const char *tests[] = {
+		"1+1", 
 		"+3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3",	/* RC mandated: OK */
 		"123",					/* OK */
-		"3+4 * 2 / ( 1 - 5 ) ^ 2 ^ 3.14",	/* OK */
-		"(((((((1+2+3**(4 + 5))))))",		/* bad parens */
-		"a^(b + c/d * .1e5)",			/* unknown op */
-		"(1**2)**3",				/* OK */
-		"2 + 2 *",
+		"(((((((1+2+3*(4 + 5))))))))",		/* bad parens */
+		"(1*2)*3",		/* OK */
+		//"2 + 2 *",
 		"(1) * (2+2*(2+3))",			/* unexpected eol */
 		0
 	};
@@ -47,7 +66,6 @@ int main(int ac, char **av)
 			 rpn_string ? "Ok" : "Error");
 		print_prn_string(rpn_string);
 		printf("RESULT: %f\n", rpn(rpn_string));
-		exit(0);
         //must be 3 4 2 * 1 5 - 2 3 ^ ^ / +
 	}
  

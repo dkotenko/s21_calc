@@ -5,7 +5,7 @@ char	*ft_strndup(const char *src, size_t n)
 	char	*dst;
 	size_t	i;
 
-	dst = (char *)calloc(ft_strnlen(src, n) + 1, sizeof(char));
+	dst = (char *)ft_memalloc((ft_strnlen(src, n) + 1) * sizeof(char));
 	i = 0;
 	while (i < n)
 	{

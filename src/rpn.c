@@ -80,7 +80,7 @@ double rpn(t_dlist *tokens)
             if (strchr(OPERANDS, *s)) {
                 b = pop(values);
                 a = pop(values);
-            #define binop(values, x) printf("%c:", *s), push(values, x)
+            #define binop(values, x) push(values, x)
                 if (*s == '+')	binop(values, a + b);
                 else if (*s == '-')	binop(values, a - b);
                 else if (*s == '*')	binop(values, a * b);
@@ -96,6 +96,7 @@ double rpn(t_dlist *tokens)
 	if (values->size != 1) die("stack leftover\n");
     double result = pop(values);
     t_dlist_free(values, t_dlist_node_free_simple);
+    t_dlist_free(tokens, t_dlist_node_free_simple);
 	return result;
 }
  

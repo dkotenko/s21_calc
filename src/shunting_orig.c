@@ -56,6 +56,7 @@ void display(const char *s)
 }
  
 int prec_booster;
+
  
 #define fail(s1, s2) {fprintf(stderr, "[Error %s] %s\n", s1, s2); return 0;}
  

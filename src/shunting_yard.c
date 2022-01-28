@@ -3,9 +3,6 @@
 #include <string.h>
 #include "smartcalc.h"
 
-
-extern int debug;
-
 t_pattern end_of_string = {"", A_NONE, 0, {0}};
  
 t_pattern operands[] = {
@@ -44,25 +41,6 @@ static void free_node(t_dlist_node * node)
 	free(node->data);
 	free(node);
 }
-
-static void display(const char *s)
-{
-	if (!debug) {
-		return ;
-	}
-	int i;
-	printf("\033[1;1H\033[JText | %s", s);
-	printf("\nStack| ");
-	for (i = 0; i < l_stack; i++)
-		printf("%.*s ", stack[i].len, stack[i].s);
-	printf("\nQueue| ");
-	for (i = 0; i < l_queue; i++)
-		printf("%.*s ", queue[i].len, queue[i].s);
-	puts("\n\n<press enter>");
-	getchar();
-}
- 
-
 
 #define fail(s1, s2) { \
 	fprintf(stderr, "[Error %s] %s\n", s1, s2); \
@@ -114,9 +92,9 @@ t_dlist *parse(const char *s) {
 	dl_stack = t_dlist_new();
 	dl_queue = t_dlist_new();
 	int precedence_booster;
- 
+	
+	printf("%s\n", s);
 	precedence_booster = l_queue = l_stack = 0;
-	display(s);
 	while (*s) {
 		pattern = match(s, arguments, &tok, &s);
 		if (!pattern || pattern == &end_of_string) {
@@ -129,7 +107,6 @@ t_dlist *parse(const char *s) {
 		}
 		t_dlist_append(dl_queue, t_dlist_node_new(ft_strndup(tok.s, tok.len), sizeof(char)));
 		qpush(tok);
-		display(s);
  
 		while (1) {
 			pattern = match(s, operands, &tok, &s);
@@ -159,7 +136,6 @@ t_dlist *parse(const char *s) {
 				t_dlist_node *tmp_node = t_dlist_pop(dl_stack, dl_stack->tail);
 				t_dlist_append(dl_queue, tmp_node);
 				qpush(tmp);
-				display(s);
 			}
  
 			if (pattern->precedence == -1) {
@@ -170,7 +146,6 @@ t_dlist *parse(const char *s) {
 		}
 
 		if (!pattern->precedence) {
-			display(s);
 			if (precedence_booster) {
 				fail("unmatched (", s);
 			}
@@ -179,7 +154,6 @@ t_dlist *parse(const char *s) {
 		}
 		t_dlist_append(dl_stack, t_dlist_node_new(ft_strndup(tok.s, tok.len), sizeof(char)));
 		spush(tok);
-		display(s);
 	}
  
 	if (pattern->precedence > 0) {

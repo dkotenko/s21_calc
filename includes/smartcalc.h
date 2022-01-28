@@ -34,4 +34,5 @@ size_t	ft_strnlen(const char *s, size_t maxlen);
 void	*ft_memalloc(size_t size);
 int	handle_error(char *s);
 double rpn(t_dlist *tokens);
+int equal(double a, double b);
 #endif

@@ -13,8 +13,7 @@ HEADERS_FILES=\
 
 SRCS_DIR=src
 
-SRCS_FILES=main.c \
-	shunting_yard.c \
+SRCS_FILES_FOR_TEST=shunting_yard.c \
 	dlist.c \
 	dlist_free.c \
 	dlist_node.c \
@@ -23,19 +22,25 @@ SRCS_FILES=main.c \
 	ft_strnlen.c \
 	ft_memalloc.c \
 	handle_error.c \
-	rpn.c
+	rpn.c \
+	utils.c
 
-SRCS=$(addprefix $(SRCS_DIR)/, $(SRCS_FILES))
+SRCS_FILES=$(SRCS_FOR_TEST) main.c
+SRCS_FOR_TEST=$(addprefix $(SRCS_DIR)/, $(SRCS_FILES_FOR_TEST))
+SRCS=$(SRCS_FOR_TEST) $(addprefix $(SRCS_DIR)/, main.c)
+
 HEADERS = $(addprefix $(HEADERS_DIR)/, $(HEADERS_FILES))
 OBJ=$(SRCS:.c=.o)
+OBJ_FOR_TEST=$(SRCS_FOR_TEST:.c=.o)
 INCLUDES=-I./includes
 TEST_INCLUDES_DIR=tests/includes
 TEST_INCLUDES=$(TEST_INCLUDES_DIR)/tests.h
 
 TEST_DIR=tests
-TEST_NAME=test.bin
-TEST_SRCS=$(addprefix $(TEST_DIR)/$(SRCS_DIR)/test_, $(SRCS_FILES))
-TEST_SRCS+= tests/$(SRCS_DIR)/test_main.c
+TEST_NAME=test
+TEST_FILES=test_calculation.c \
+		test_main.c
+TEST_SRCS=$(addprefix $(TEST_DIR)/$(SRCS_DIR)/, $(TEST_FILES))
 TEST_OBJS=$(TEST_SRCS:%.c=%.o)
 
 REPORT_NAME=report.html
@@ -59,7 +64,7 @@ multi:
 test: $(TEST_NAME)
 
 $(TEST_NAME): $(NAME) $(TEST_OBJS)
-	$(CC) $(FLAGS) $(TEST_OBJS) $(OBJ) -o $@ -lcheck -lm -lpthread -lrt -lsubunit
+	$(CC) $(FLAGS) $(TEST_OBJS) $(OBJ_FOR_TEST) -o $@ -lcheck -lm -lpthread -lrt -lsubunit
 
 $(TEST_DIR)/%.o:$(TEST_DIR)/%.c $(TEST_INCLUDES)
 	$(CC) $(FLAGS) -I./$(TEST_DIR)/includes -I./includes -c $< -o $@

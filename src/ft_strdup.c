@@ -6,7 +6,7 @@ char	*ft_strdup(const char *src)
 	unsigned int	len;
 
 	len = strlen(src);
-	dupl = (char *)calloc(len + 1, sizeof(char));
+	dupl = (char *)ft_memalloc((len + 1) * sizeof(char));
 	
 	len = 0;
 	while (src[len])
