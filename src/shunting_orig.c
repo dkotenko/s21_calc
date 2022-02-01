@@ -1,7 +1,9 @@
 #include <sys/types.h>
 #include <regex.h>
 #include <stdio.h>
- 
+
+int debug;
+
 typedef struct {
 	const char *s;
 	int len, prec, assoc;
@@ -43,6 +45,9 @@ int l_queue, l_stack;
  
 void display(const char *s)
 {
+	if (!debug) {
+		return ;
+	}
 	int i;
 	printf("\033[1;1H\033[JText | %s", s);
 	printf("\nStack| ");
@@ -162,6 +167,7 @@ re_op:		p = match(s, pat_ops, &tok, &s);
 int main()
 {
 	int i;
+	debug = 0;
 	const char *tests[] = { 
 		"3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3",	/* RC mandated: OK */
 		"123",					/* OK */

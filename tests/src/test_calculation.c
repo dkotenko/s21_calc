@@ -4,53 +4,44 @@
 typedef struct {
 	const char *s;
 	double result;
-} expression;
+} t_expression;
 
-int expr_size = 5;
+int expr_size = 6;
+
+static t_dlist *spaced_str_to_dlist(const char *s)
+{
+	const char *delim = " ";
+	t_dlist *dlist = t_dlist_new();
+
+ 	char *p = strtok((char *)s, delim);
+	while (p != NULL)
+	{
+		p = strtok(NULL, delim);
+		t_dlist_append(dlist, t_dlist_node_new(ft_strdup(p), sizeof(char)));
+	}
+	return dlist;
+}
+
+t_expression expr[6] = {
+	{"+3 4 2 * 1 5 - 2 3 ^ ^ / +", 3.000122},
+	{"1 1 +", 2.},
+	{"123", 123.},
+	{"1 2 + 3 4 5 + * +", 30.},
+	{"1 2 * 3 *", 6.},
+	{"1 2 2 2 3 + * + *", 12.}
+};
 
 
-
-/*
-START_TEST(test_calculation_1) {
+START_TEST(test_calculation) {
 	for (int i = 0; i < expr_size; i++) {
-		double value = rpn(parse(expr[i].s));
+		t_dlist *dlist = spaced_str_to_dlist(expr[i].s);
+		double value = rpn(dlist);
 		ck_assert_int_eq(1, equal(value, expr[i].result));
+		t_dlist_free(dlist, t_dlist_node_free_simple);
 		break;
 	}
 } END_TEST
-*/
 
-START_TEST(test_calculation_1) {
-		//char *s = "3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3";
-		double result = 3.00012207;
-		t_dlist *p = parse("1+1");
-		exit(0);
-		double value = rpn(p);
-		
-		ck_assert_int_eq(1, equal(value, result));
-} END_TEST
-
-/*
-START_TEST(test_calculation_2) {
-		double value = rpn(parse(expr[1].s));
-		ck_assert_int_eq(1, equal(value, expr[1].result));
-} END_TEST
-
-START_TEST(test_calculation_3) {
-		double value = rpn(parse(expr[2].s));
-		ck_assert_int_eq(1, equal(value, expr[2].result));
-} END_TEST
-
-START_TEST(test_calculation_4) {
-		double value = rpn(parse(expr[3].s));
-		ck_assert_int_eq(1, equal(value, expr[3].result));
-} END_TEST
-
-START_TEST(test_calculation_5) {
-		double value = rpn(parse(expr[4].s));
-		ck_assert_int_eq(1, equal(value, expr[4].result));
-} END_TEST
-*/
 
 Suite *calculation_suite(void) {
   Suite *s;
@@ -59,24 +50,7 @@ Suite *calculation_suite(void) {
   s = suite_create("calculation");
   tc_core = tcase_create("Core");
 
-/*
-expression expr[5] = {
-	,
-	{"123", 123.},
-	//{"3+4 * 2 / ( 1 - 5 ) ^ 2 ^ 3.14", }, radicals not supported
-	{"(((((((1+2+3*(4 + 5))))))))",  30},
-	//{"a^(b + c/d * .1e5)", }, 
-	{"(1*2)*3", 6.},
-	{"(1) * (2+2*(2+3))", 12}
-};
-*/
-  tcase_add_test(tc_core, test_calculation_1);
-  /*
-  tcase_add_test(tc_core, test_calculation_2);
-  tcase_add_test(tc_core, test_calculation_3);
-  tcase_add_test(tc_core, test_calculation_4);
-  tcase_add_test(tc_core, test_calculation_5);
-  */
+  tcase_add_test(tc_core, test_calculation);
   suite_add_tcase(s, tc_core);
 
   return s;

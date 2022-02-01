@@ -16,7 +16,7 @@ static t_args parse_arguments(int ac, char **av)
 	return args;
 }
 
-static void print_prn_string(t_dlist *rpn)
+static void print_rpn_string(t_dlist *rpn)
 {
 	t_dlist_node *tmp = rpn->head;
 	while (tmp) {
@@ -41,6 +41,7 @@ int main(int ac, char **av)
 
 	int i;
 	const char *tests[] = {
+		"sin(30)",
 		"1+1", 
 		"+3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3",	/* RC mandated: OK */
 		"123",					/* OK */
@@ -64,7 +65,7 @@ int main(int ac, char **av)
 		rpn_string = parse(tests[i]);
 		printf("string `%s': %s\n\n", tests[i],
 			 rpn_string ? "Ok" : "Error");
-		print_prn_string(rpn_string);
+		print_rpn_string(rpn_string);
 		printf("RESULT: %f\n", rpn(rpn_string));
         //must be 3 4 2 * 1 5 - 2 3 ^ ^ / +
 	}

@@ -12,10 +12,16 @@ static void die(const char *msg)
 }
  
 #define OPERANDS "+-/*^"
+#define calc(values, x) push(values, x)
 
+static int eq(char *a, char *b)
+{
+    return !strcmp(a, b);
+}
 
 static void t_dlist_print(t_dlist *dlist)
 {
+    return ;
     //printf("dlist content:\n");
     t_dlist_node *tmp = dlist->head;
     while (tmp) {
@@ -74,19 +80,24 @@ double rpn(t_dlist *tokens)
             if (isdigit(*s) || (*s == '+') || (*s == '-')) {
                 double value = strtod(s, NULL);
                 push(values, value);
+            } else {
+                a = pop(values);
+                if (eq("cos", s)) calc(values, cos(a));
+                else if (eq("sin", s)) calc(values, sin(a));
+                else if (eq("tan", s)) calc(values, tan(a));
+                else if (eq("acos", s)) calc(values, acos(a));
+                else if (eq("asin", s)) calc(values, asin(a));
+                else if (eq("atan", s)) calc(values, atan(a));
             }
         } else {
-
             if (strchr(OPERANDS, *s)) {
                 b = pop(values);
                 a = pop(values);
-            #define binop(values, x) push(values, x)
-                if (*s == '+')	binop(values, a + b);
-                else if (*s == '-')	binop(values, a - b);
-                else if (*s == '*')	binop(values, a * b);
-                else if (*s == '/')	binop(values, a / b);
-                else if (*s == '^')	binop(values, pow(a, b));
-            #undef binop
+                if (*s == '+')	calc(values, a + b);
+                else if (*s == '-')	calc(values, a - b);
+                else if (*s == '*')	calc(values, a * b);
+                else if (*s == '/')	calc(values, a / b);
+                else if (*s == '^')	calc(values, pow(a, b));
             }
         }
         t_dlist_print(values);
