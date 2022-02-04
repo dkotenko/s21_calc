@@ -13,17 +13,12 @@ HEADERS_FILES=\
 
 SRCS_DIR=src
 
-SRCS_FILES_FOR_TEST=shunting_yard.c \
+SRCS_FILES_FOR_TEST=\
+	shunting_yard.c \
 	dlist.c \
-	dlist_free.c \
-	dlist_node.c \
-	ft_strdup.c \
-	ft_strndup.c \
-	ft_strnlen.c \
-	ft_memalloc.c \
-	handle_error.c \
 	rpn.c \
-	utils.c
+	utils.c \
+	credit.c
 
 SRCS_FILES=$(SRCS_FOR_TEST) main.c
 SRCS_FOR_TEST=$(addprefix $(SRCS_DIR)/, $(SRCS_FILES_FOR_TEST))

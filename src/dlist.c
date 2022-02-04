@@ -79,3 +79,121 @@ t_dlist_node	*t_dlist_get_by_index(t_dlist *list, int index)
 	}
 	return tmp;
 }
+
+void	t_dlist_node_free(void (*free_func)(t_dlist_node *node),
+						t_dlist_node *n)
+{
+	(*free_func)(n);
+}
+
+void	t_dlist_free_content(t_dlist *dlist,
+						void (*free_func)(t_dlist_node *))
+{
+	t_dlist_node	*node;
+	t_dlist_node	*next;
+
+	node = dlist->head;
+	(void)free_func;
+	while (node)
+	{
+		next = node->next;
+		t_dlist_node_free(free_func, node);
+		node = next;
+	}
+}
+
+void	t_dlist_free(t_dlist *dlist,
+						void (*free_func)(t_dlist_node *))
+{
+	t_dlist_free_content(dlist, free_func);
+	free(dlist);	
+}
+
+void	t_dlist_node_free_simple(t_dlist_node *node)
+{
+	free(node->data);
+	free(node);
+}
+
+#include "dlist.h"
+
+t_dlist_node	*t_dlist_node_new(void *data, int size)
+{
+	t_dlist_node	*new;
+
+	new = (t_dlist_node *)malloc(sizeof(t_dlist_node));
+	new->data = data;
+	new->prev = NULL;
+	new->next = NULL;
+	new->data_size = size;
+	return (new);
+}
+
+/*
+** Add new node and set it to the given pointer
+*/
+
+t_dlist_node	*t_dlist_insert_after(t_dlist *list,
+t_dlist_node *node, t_dlist_node *new)
+{
+	new->prev = node;
+	if (!node->next)
+		list->tail = new;
+	else
+	{
+		new->next = node->next;
+		node->next->prev = new;
+	}
+	node->next = new;
+	list->size++;
+	return (new);
+}
+
+t_dlist_node	*t_dlist_insert_before(t_dlist *list,
+t_dlist_node *node, t_dlist_node *new)
+{
+	new->next = node;
+	if (!node->prev)
+		list->head = new;
+	else
+	{
+		new->prev = node->prev;
+		node->prev->next = new;
+	}
+	node->prev = new;
+	list->size++;
+	return (new);
+}
+
+/*
+** add to the front of the list
+*/
+
+t_dlist_node	*t_dlist_push(t_dlist *list, t_dlist_node *new)
+{
+	if (!list->head)
+	{
+		list->head = new;
+		list->tail = new;
+		list->size++;
+	}
+	else
+	{
+		t_dlist_insert_before(list, list->head, new);
+	}
+	return (new);
+}
+
+/*
+** add to the end of the list
+*/
+
+t_dlist_node	*t_dlist_append(t_dlist *list, t_dlist_node *new)
+{
+	if (!list->tail)
+		t_dlist_push(list, new);
+	else
+		t_dlist_insert_after(list, list->tail, new);
+	return (new);
+}
+

@@ -2,16 +2,26 @@
 #include <stdio.h>
 #include <string.h>
 
+enum e_calc_mode {
+	CALC_NORMAL,
+	CALC_CREDIT,
+	CALC_DEPOSIT
+};
+
 typedef struct {
 	int console;
+	int mode;
 } t_args;
 
 static t_args parse_arguments(int ac, char **av)
 {
 	t_args args;
 
+	args.mode = CALC_NORMAL;
 	for (int i = 1; i < ac; i++) {
 		args.console = !strcmp(av[i], "-c") || !strcmp(av[i], "--console") ? 1 : 0;
+		args.mode = !strcmp(av[i], "-cr") || !strcmp(av[i], "--credit") ? CALC_CREDIT : args.mode;
+		args.mode = !strcmp(av[i], "-de") || !strcmp(av[i], "--deposit") ? CALC_DEPOSIT : args.mode;
 	}
 	return args;
 }
@@ -32,6 +42,18 @@ void run_gui()
 	return ;
 }
 
+void calc_normal()
+{
+	;
+}
+
+void calc_deposit()
+{
+	;
+}
+
+
+
 int main(int ac, char **av)
 {
 	t_args args = parse_arguments(ac, av);
@@ -39,9 +61,20 @@ int main(int ac, char **av)
 		run_gui();
 	}
 
+	switch (args.mode) {
+		case CALC_DEPOSIT:
+			calc_deposit();
+			break ;
+		case CALC_CREDIT:
+			calc_credit();
+			break ;
+		default:
+			calc_normal();
+	}	
+
 	int i;
 	const char *tests[] = {
-		"sin(30)",
+		"cos(sin(30))",
 		"1+1", 
 		"+3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3",	/* RC mandated: OK */
 		"123",					/* OK */
@@ -68,6 +101,7 @@ int main(int ac, char **av)
 		print_rpn_string(rpn_string);
 		printf("RESULT: %f\n", rpn(rpn_string));
         //must be 3 4 2 * 1 5 - 2 3 ^ ^ / +
+		exit(0);
 	}
  
 	return 0;

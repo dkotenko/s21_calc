@@ -18,8 +18,14 @@ t_pattern operands[] = {
  
 t_pattern arguments[] = {
 	{"^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?", 0, 0, {0}},
-	//{"^[a-zA-Z_][a-zA-Z_0-9]*", 0, 0, {0}},
+	{"^[a-zA-Z_][a-zA-Z_0-9]*", 0, 0, {0}},
 	{"^\\(", A_L, -1, {0}},
+	{0}
+};
+
+t_pattern functions[] = {
+	{"^sin", A_R, 3, {0}},
+	{"^cos", A_R, 3, {0}},
 	{0}
 };
 
@@ -59,6 +65,10 @@ int init(void)
 	for (i = 0, p = arguments; p[i].str; i++)
 		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
 			fail("comp", p[i].str);
+
+	for (i = 0, p = functions; p[i].str; i++)
+		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
+			fail("comp", p[i].str);
 	return 1;
 }
  
@@ -91,11 +101,18 @@ t_dlist *parse(const char *s) {
 	t_token *t, tok;
 	dl_stack = t_dlist_new();
 	dl_queue = t_dlist_new();
+	t_dlist *dl_funct = t_dlist_new();
 	int precedence_booster;
 	
-	printf("%s\n", s);
+	//printf("%s\n", s);
 	precedence_booster = l_queue = l_stack = 0;
 	while (*s) {
+		pattern = match(s, functions, &tok, &s);
+
+		if (pattern) {
+			t_dlist_append(dl_funct, t_dlist_node_new(ft_strndup(tok.s, tok.len), sizeof(char)));
+		}
+
 		pattern = match(s, arguments, &tok, &s);
 		if (!pattern || pattern == &end_of_string) {
 			fail("parse arg", s);
@@ -106,6 +123,9 @@ t_dlist *parse(const char *s) {
 			continue;
 		}
 		t_dlist_append(dl_queue, t_dlist_node_new(ft_strndup(tok.s, tok.len), sizeof(char)));
+		while (dl_funct->size) {
+			t_dlist_append(dl_queue, t_dlist_pop(dl_funct, dl_funct->tail));
+		}
 		qpush(tok);
  
 		while (1) {
