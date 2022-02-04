@@ -26,6 +26,13 @@ enum assoc {
 	A_R
 };
 
+typedef struct {
+    double amount;
+    int term_in_months;
+    double interest_rate;
+    int type;
+} t_credit;
+
 int		init(void);
 t_dlist *parse(const char *s);
 char	*ft_strdup(const char *src);

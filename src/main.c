@@ -4,7 +4,8 @@
 
 enum e_calc_mode {
 	CALC_NORMAL,
-	CALC_CREDIT,
+	CALC_CREDIT_ANNUITY,
+	CALC_CREDIT_DIFFERENTIATED,
 	CALC_DEPOSIT
 };
 
@@ -19,8 +20,9 @@ static t_args parse_arguments(int ac, char **av)
 
 	args.mode = CALC_NORMAL;
 	for (int i = 1; i < ac; i++) {
-		args.console = !strcmp(av[i], "-c") || !strcmp(av[i], "--console") ? 1 : 0;
-		args.mode = !strcmp(av[i], "-cr") || !strcmp(av[i], "--credit") ? CALC_CREDIT : args.mode;
+		args.console = !strcmp(av[i], "-co") || !strcmp(av[i], "--console") ? 1 : 0;
+		args.mode = !strcmp(av[i], "-ca") || !strcmp(av[i], "--credit-annuity") ? CALC_CREDIT_ANNUITY : args.mode;
+		args.mode = !strcmp(av[i], "-cd") || !strcmp(av[i], "--credit-differentiated") ? CALC_CREDIT_DIFFERENTIATED : args.mode;
 		args.mode = !strcmp(av[i], "-de") || !strcmp(av[i], "--deposit") ? CALC_DEPOSIT : args.mode;
 	}
 	return args;
@@ -61,12 +63,18 @@ int main(int ac, char **av)
 		run_gui();
 	}
 
+	t_credit credit;
+	memset(&data, 0);
+
 	switch (args.mode) {
 		case CALC_DEPOSIT:
 			calc_deposit();
 			break ;
-		case CALC_CREDIT:
-			calc_credit();
+		case CALC_CREDIT_ANNUITY:
+			calc_annuity(data);
+			break ;
+		case CALC_CREDIT_DIFFERENTIATED:
+			calc_differentiated(data	);
 			break ;
 		default:
 			calc_normal();
