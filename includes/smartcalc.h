@@ -33,6 +33,27 @@ typedef struct {
     int type;
 } t_credit;
 
+typedef struct {
+	double *monthly_payments;
+	double overpayment;
+	double total_payment;
+	char *message;
+} t_credit_output;
+
+typedef struct {
+	double accrued_interest;
+	double tax_amount;
+	double deposit_by_end;
+	char *message;
+} t_deposit_output;
+
+typedef struct {
+	double output;
+	char *message;
+} t_calc_output;
+
+
+
 int		init(void);
 t_dlist *parse(const char *s);
 char	*ft_strdup(const char *src);
@@ -42,6 +63,10 @@ void	*ft_memalloc(size_t size);
 int	handle_error(char *s);
 double rpn(t_dlist *tokens);
 int equal(double a, double b);
-void calc_credit(void);
+t_credit_output *calc_annuity(t_credit *data);
+t_credit_output *calc_differentiated(t_credit *data);
+void print_annuity(t_credit data, t_credit_output *out);
+void print_differentiated(t_credit data, t_credit_output *out);
+void free_credit_output(t_credit_output *out);
 
 #endif

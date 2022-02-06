@@ -46,40 +46,6 @@ void run_gui()
 
 void calc_normal()
 {
-	;
-}
-
-void calc_deposit()
-{
-	;
-}
-
-
-
-int main(int ac, char **av)
-{
-	t_args args = parse_arguments(ac, av);
-	if (!args.console) {
-		run_gui();
-	}
-
-	t_credit credit;
-	memset(&data, 0);
-
-	switch (args.mode) {
-		case CALC_DEPOSIT:
-			calc_deposit();
-			break ;
-		case CALC_CREDIT_ANNUITY:
-			calc_annuity(data);
-			break ;
-		case CALC_CREDIT_DIFFERENTIATED:
-			calc_differentiated(data	);
-			break ;
-		default:
-			calc_normal();
-	}	
-
 	int i;
 	const char *tests[] = {
 		"cos(sin(30))",
@@ -94,7 +60,7 @@ int main(int ac, char **av)
 	};
  
 	if (!init()) {
-		return 1;
+		return ;
 	}
 
 	t_dlist *rpn_string;
@@ -111,6 +77,42 @@ int main(int ac, char **av)
         //must be 3 4 2 * 1 5 - 2 3 ^ ^ / +
 		exit(0);
 	}
- 
+}
+
+void calc_deposit()
+{
+	;
+}
+
+
+
+int main(int ac, char **av)
+{
+	t_args args = parse_arguments(ac, av);
+	if (!args.console) {
+		run_gui();
+	}
+
+	t_credit data;
+	memset(&data, 0, sizeof(t_credit));
+	t_credit_output *out = NULL;
+
+	switch (args.mode) {
+		case CALC_DEPOSIT:
+			calc_deposit();
+			break ;
+		case CALC_CREDIT_ANNUITY:
+			out = calc_annuity(&data);
+			print_annuity(data, out);
+			free_credit_output(out);
+			break ;
+		case CALC_CREDIT_DIFFERENTIATED:
+			out = calc_differentiated(&data);
+			print_differentiated(data, out);
+			free_credit_output(out);
+			break ;
+		default:
+			calc_normal();
+	}
 	return 0;
 }
