@@ -93,7 +93,7 @@ int main(int ac, char **av)
 		run_gui();
 	}
 
-	t_credit data;
+	t_credit_inputdata;
 	memset(&data, 0, sizeof(t_credit));
 	t_credit_output *out = NULL;
 

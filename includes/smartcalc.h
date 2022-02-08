@@ -31,7 +31,7 @@ typedef struct {
     int term_in_months;
     double interest_rate;
     int type;
-} t_credit;
+} t_credit_input;
 
 typedef struct {
 	double *monthly_payments;
@@ -39,6 +39,10 @@ typedef struct {
 	double total_payment;
 	char *message;
 } t_credit_output;
+
+typedef struct {
+	int dummy;
+} t_deposit_input;
 
 typedef struct {
 	double accrued_interest;
@@ -63,10 +67,10 @@ void	*ft_memalloc(size_t size);
 int	handle_error(char *s);
 double rpn(t_dlist *tokens);
 int equal(double a, double b);
-t_credit_output *calc_annuity(t_credit *data);
-t_credit_output *calc_differentiated(t_credit *data);
-void print_annuity(t_credit data, t_credit_output *out);
-void print_differentiated(t_credit data, t_credit_output *out);
+t_credit_output *calc_annuity(t_credit_input*data);
+t_credit_output *calc_differentiated(t_credit_input*data);
+void print_annuity(t_credit_inputdata, t_credit_output *out);
+void print_differentiated(t_credit_inputdata, t_credit_output *out);
 void free_credit_output(t_credit_output *out);
 
 #endif
