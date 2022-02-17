@@ -4,6 +4,10 @@
 #include "microui.h"
 
 #define NM_BTN_CALC_MODE "Calc mode"
+#define ONE_FIELD {90, 40}
+#define TWO_FIELDS {90, 40, 90, 40}
+
+#define MAIN_SIZE 
 
 static  char logbuf[64000];
 static   int logbuf_updated = 0;
@@ -19,14 +23,15 @@ static void write_log(const char *text) {
 
 static void test_window(mu_Context *ctx) {
   /* do window */
-  if (mu_begin_window(ctx, "Smartcalc v1.0", mu_rect(40, 40, 300, 450))) {
+  if (mu_begin_window(ctx, "Smartcalc v1.0", mu_rect(40, 0, 300, 550))) {
     mu_Container *win = mu_get_current_container(ctx);
     win->rect.w = mu_max(win->rect.w, 240);
     win->rect.h = mu_max(win->rect.h, 300);
     
     
     /* window info */
-    if (mu_header(ctx, "Standart")) {
+     
+    if (mu_header_ex(ctx, "Standart", MU_OPT_EXPANDED)) {
       //Set x
       
       int submitted1 = 0;
@@ -47,106 +52,149 @@ static void test_window(mu_Context *ctx) {
         submitted = 1;
       }
       
-      mu_layout_row(ctx, 2, (int[]) { 80, 80 }, 0);
+      mu_layout_row(ctx, 4, (int[]) {90, 90, 90, 90}, 0);
       if (mu_button(ctx, "Calculate")) { submitted = 1; }
       if (submitted) {
         write_log(buf);
         //buf[0] = '\0';
       }
       mu_button(ctx, "Draw plot");
+      mu_layout_row(ctx, 2, (int[]) {90, 90}, 0);
+      mu_text(ctx, "");
     }
 
-    mu_text(ctx, "");
-    
-    /* labels + buttons */
-    if (mu_header_ex(ctx, "Deposit", MU_OPT_EXPANDED)) {
-      mu_layout_row(ctx, 3, (int[]) { 86, -110, -1 }, 0);
-
-      
-      static char dep_amount[128];
-      mu_layout_row(ctx, 2, (int[]) { 80, 40 }, 0);
-      mu_label(ctx, "amount:");
-      if (mu_textbox(ctx, dep_amount, sizeof(dep_amount)) & MU_RES_SUBMIT) {
-        mu_set_focus(ctx, ctx->last_id);
-      }
-
-      static char dep_term[128];
-      mu_layout_row(ctx, 2, (int[]) { 80, 40 }, 0);
-      mu_label(ctx, "term:");
-      if (mu_textbox(ctx, dep_term, sizeof(dep_term)) & MU_RES_SUBMIT) {
-        mu_set_focus(ctx, ctx->last_id);
-      }
-
-      static char dep_interest[128];
-      mu_layout_row(ctx, 2, (int[]) { 80, 40 }, 0);
-      mu_label(ctx, "interest rate:");
-      if (mu_textbox(ctx, dep_interest, sizeof(dep_interest)) & MU_RES_SUBMIT) {
-        mu_set_focus(ctx, ctx->last_id);
-      }
-
-      static char dep_tax[128];
-      mu_layout_row(ctx, 2, (int[]) { 80, 40 }, 0);
-      mu_label(ctx, "tax rate:");
-      if (mu_textbox(ctx, dep_tax, sizeof(dep_tax)) & MU_RES_SUBMIT) {
-        mu_set_focus(ctx, ctx->last_id);
-      }
-
-      //TODO add fields, must be 8, now 4
-      mu_layout_row(ctx, 3, (int[]) { 80, 80, 100 }, 0);
-      mu_button(ctx, "Calculate");
-      mu_button(ctx, "Draw plot");
-      mu_layout_row(ctx, 2, (int[]) { 80, 40 }, 0);
-      
-
-     
-    }
-
+    /* CREDIT */
     mu_text(ctx, "");
     if (mu_header_ex(ctx, "Credit", MU_OPT_EXPANDED)) {
 
       static char cred_amount[128];
-      mu_layout_row(ctx, 2, (int[]) { 80, 40 }, 0);
+      mu_layout_row(ctx, 4, (int[]) TWO_FIELDS, 0);
       mu_label(ctx, "amount:");
       if (mu_textbox(ctx, cred_amount, sizeof(cred_amount)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
       }
 
       static char cred_term[128];
-      mu_layout_row(ctx, 2, (int[]) { 80, 40 }, 0);
       mu_label(ctx, "term in months:");
       if (mu_textbox(ctx, cred_term, sizeof(cred_term)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
       }
 
       static char cred_interest[128];
-      mu_layout_row(ctx, 2, (int[]) { 80, 40 }, 0);
+      mu_layout_row(ctx, 2, (int[]) ONE_FIELD, 0);
       mu_label(ctx, "interest rate:");
       if (mu_textbox(ctx, cred_interest, sizeof(cred_interest)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
       }
       mu_layout_begin_column(ctx);
       static int checks[3] = { 1, 0 };
-      mu_layout_row(ctx, 3, (int[]) { 80, 80, 100 }, 0);
-      mu_text(ctx, "credit type:");
-      mu_checkbox(ctx, "Annuity", &checks[0]);
-      mu_checkbox(ctx, "Differentiated", &checks[1]);
+      
+      mu_layout_row(ctx, 3, (int[]) {90, 80, 100}, 0);
+      mu_label(ctx, "credit type:");
+      mu_checkbox(ctx, "annuity", &checks[0]);
+      mu_checkbox(ctx, "differentiated", &checks[1]);
       mu_layout_end_column(ctx);
 
-      mu_layout_row(ctx, 3, (int[]) { 80, 80, 100 }, 0);
+      mu_layout_row(ctx, 2, (int[]) { 90, 40 }, 0);
       mu_button(ctx, "Calculate");
-      mu_button(ctx, "Draw plot");
-      mu_layout_row(ctx, 2, (int[]) { 80, 40 }, 0);
+      mu_layout_row(ctx, 2, (int[]) { 90, 40 }, 0);
+      mu_text(ctx, "");
     }
+    
+    /* DEPOSIT */
+    mu_text(ctx, "");
+    if (mu_header_ex(ctx, "Deposit", MU_OPT_EXPANDED)) {
+      mu_layout_row(ctx, 3, (int[]) { 86, -110, -1 }, 0);
 
-    
-    
+      
+      static char dep_amount[128];
+      mu_layout_row(ctx, 4, (int[]) TWO_FIELDS, 0);
+      mu_label(ctx, "amount:");
+      if (mu_textbox(ctx, dep_amount, sizeof(dep_amount)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+      static char dep_term[128];
+      mu_label(ctx, "term:");
+      
+      if (mu_textbox(ctx, dep_term, sizeof(dep_term)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+
+      static char dep_interest[128];
+      mu_layout_row(ctx, 4, (int[]) TWO_FIELDS, 0);
+      mu_label(ctx, "interest rate:");
+      if (mu_textbox(ctx, dep_interest, sizeof(dep_interest)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+
+      static char dep_tax[128];
+      mu_label(ctx, "tax rate:");
+      if (mu_textbox(ctx, dep_tax, sizeof(dep_tax)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+
+      mu_layout_begin_column(ctx);
+      static int checks[3] = { 1, 0 };
+      
+      mu_layout_row(ctx, 3, (int[]) {90, 80, 100}, 0);
+      mu_label(ctx, "capit. of interest:");
+      mu_checkbox(ctx, "yes", &checks[0]);
+      mu_checkbox(ctx, "no", &checks[1]);
+      mu_layout_end_column(ctx);
+
+      /* replenishments */
+      mu_layout_row(ctx, 2, (int[]) {200, -1}, 0);
+      mu_label(ctx, "replenishments    (delimeter = ' ; ' )");
+
+      mu_layout_row(ctx, 3, (int[]) {10, 80, -1}, 0);
+      static char repl_times[1024];
+      mu_text(ctx, "");
+      mu_label(ctx, "months:");
+      if (mu_textbox(ctx, repl_times, sizeof(repl_times)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+      mu_layout_row(ctx, 3, (int[]) {10, 80, -1}, 0);
+      static char repl_amounts[1024];
+      mu_text(ctx, "");
+      mu_label(ctx, "amounts:");
+      if (mu_textbox(ctx, repl_amounts, sizeof(repl_amounts)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+
+
+      /* withdrawals */
+      mu_layout_row(ctx, 2, (int[]) {200, -1}, 0);
+      mu_label(ctx, "withdrawals    (delimeter = ' ; ' )");
+
+      mu_layout_row(ctx, 3, (int[]) {10, 80, -1}, 0);
+      static char widr_times[1024];
+      mu_text(ctx, "");
+      mu_label(ctx, "months:");
+      if (mu_textbox(ctx, widr_times, sizeof(widr_times)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+
+      mu_layout_row(ctx, 3, (int[]) {10, 80, -1}, 0);
+      static char widr_amounts[1024];
+      mu_text(ctx, "");
+      mu_label(ctx, "amounts:");
+      if (mu_textbox(ctx, widr_amounts, sizeof(widr_amounts)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+      
+      
+
+      //TODO add fields, must be 8, now 4
+      mu_layout_row(ctx, 2, (int[]) { 90, 40 }, 0);
+      mu_button(ctx, "Calculate");
+    }
     mu_end_window(ctx);
   }
 }
 
 
 static void log_window(mu_Context *ctx) {
-  if (mu_begin_window(ctx, "Log Window", mu_rect(350, 40, 300, 450))) {
+  if (mu_begin_window(ctx, "Log Window", mu_rect(350, 0, 300, 550))) {
     /* output text panel */
     mu_layout_row(ctx, 1, (int[]) { -1 }, -25);
     mu_begin_panel(ctx, "Log Output");

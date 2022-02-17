@@ -5,6 +5,7 @@
 #include "dlist.h"
 #include "types.h"
 #include <string.h>
+#include <stdbool.h>
 
 typedef struct s_token {
 	const char *s;
@@ -41,7 +42,19 @@ typedef struct {
 } t_credit_output;
 
 typedef struct {
-	int dummy;
+	int month;
+	double amount;
+} t_transaction;
+
+typedef struct {
+	double amount;
+	int term_in_months;
+	double interest_rate;
+	double tax_rate;
+	char *repl_months;
+	char *repl_amounts;
+	char *with_months;
+	char *with_amounts;
 } t_deposit_input;
 
 typedef struct {
@@ -65,12 +78,13 @@ char	*ft_strndup(const char *src, size_t n);
 size_t	ft_strnlen(const char *s, size_t maxlen);
 void	*ft_memalloc(size_t size);
 int	handle_error(char *s);
-double rpn(t_dlist *tokens);
+double rpn(t_dlist *tokens, double x_val);
 int equal(double a, double b);
-t_credit_output *calc_annuity(t_credit_input*data);
-t_credit_output *calc_differentiated(t_credit_input*data);
-void print_annuity(t_credit_inputdata, t_credit_output *out);
-void print_differentiated(t_credit_inputdata, t_credit_output *out);
+t_credit_output *calc_annuity(t_credit_input *data);
+t_credit_output *calc_differentiated(t_credit_input *data);
+void print_annuity(t_credit_input data, t_credit_output *out);
+void print_differentiated(t_credit_input data, t_credit_output *out);
 void free_credit_output(t_credit_output *out);
+char *answer_to_string(double answ);
 
 #endif

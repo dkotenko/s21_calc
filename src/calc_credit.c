@@ -11,7 +11,7 @@ enum e_credit_type {
     ANNUITY
 };
 
-void print_annuity(t_credit_inputdata, t_credit_output *out)
+void print_annuity(t_credit_input data, t_credit_output *out)
 {
     char *two = "  ";
     char *four = "    ";
@@ -26,7 +26,7 @@ void print_annuity(t_credit_inputdata, t_credit_output *out)
     printf("%stotal amount: %lf\n", four, out->total_payment);
 }
 
-void print_differentiated(t_credit_inputdata, t_credit_output *out)
+void print_differentiated(t_credit_input data, t_credit_output *out)
 {
     char *two = "  ";
     char *four = "    ";
@@ -50,7 +50,7 @@ void free_credit_output(t_credit_output *out)
     free(out);
 }
 
-char *validate_credit(t_credit_inputdata)
+char *validate_credit(t_credit_input data)
 {
     char *message = NULL;
 
@@ -66,7 +66,7 @@ char *validate_credit(t_credit_inputdata)
     return message;
 }
 
-t_credit_output *calc_annuity(t_credit_input*data)
+t_credit_output *calc_annuity(t_credit_input *data)
 {
     //a - сумма 
     //a = k * s;
@@ -112,7 +112,7 @@ t_credit_output *calc_annuity(t_credit_input*data)
  *      k - number of credit periods per year
  *      n - number of credit periods per credit
  */
-t_credit_output *calc_differentiated(t_credit_input*data)
+t_credit_output *calc_differentiated(t_credit_input *data)
 {    
     
     data->amount = 1000000.; 

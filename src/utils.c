@@ -7,6 +7,7 @@
 
 #define ERR_MALLOC "MALLOC FAILED"
 #define ERR_MALLOC_SIZE "INVALID MALLOC SIZE"
+#define EPSILON 0.0000001
 
 static void	*ft_memset(void *destination, int c, size_t n)
 {
@@ -85,6 +86,6 @@ int	handle_error(char *s)
 
 int equal(double a, double b)
 {
-	return a - b < DBL_EPSILON;
+	return a - b < EPSILON;
 }
 

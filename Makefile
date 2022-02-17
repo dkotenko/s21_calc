@@ -18,7 +18,18 @@ SRCS_FILES_FOR_TEST=\
 	dlist.c \
 	rpn.c \
 	utils.c \
-	credit.c
+	calc_credit.c \
+	calc_deposit.c
+
+SRCS_GUI=\
+	main.c \
+	renderer.c \
+	microui.c
+
+HEADERS_GUI_DIR = microui
+HEADERS_GUI_FILES=\
+	microui.h \
+	renderer.h
 
 SRCS_FILES=$(SRCS_FOR_TEST) main.c
 SRCS_FOR_TEST=$(addprefix $(SRCS_DIR)/, $(SRCS_FILES_FOR_TEST))

@@ -6,19 +6,21 @@ typedef struct {
 	double result;
 } t_expression;
 
-int expr_size = 6;
 
-static t_dlist *spaced_str_to_dlist(const char *s)
+
+static t_dlist *spaced_str_to_dlist(const char *str_origin)
 {
 	const char *delim = " ";
 	t_dlist *dlist = t_dlist_new();
-
+	char *s = ft_strdup(str_origin);
  	char *p = strtok((char *)s, delim);
+	
 	while (p != NULL)
 	{
-		p = strtok(NULL, delim);
 		t_dlist_append(dlist, t_dlist_node_new(ft_strdup(p), sizeof(char)));
+		p = strtok(NULL, delim);		
 	}
+	free(s);
 	return dlist;
 }
 
@@ -31,12 +33,14 @@ t_expression expr[6] = {
 	{"1 2 2 2 3 + * + *", 12.}
 };
 
+int expr_size = 6;
 
 START_TEST(test_calculation) {
 	for (int i = 0; i < expr_size; i++) {
 		t_dlist *dlist = spaced_str_to_dlist(expr[i].s);
-		double value = rpn(dlist);
-		ck_assert_int_eq(1, equal(value, expr[i].result));
+		double value = rpn(dlist, 0);
+		double rpn_result = expr[i].result;
+		ck_assert_int_eq(1, equal(value, rpn_result));
 		t_dlist_free(dlist, t_dlist_node_free_simple);
 		break;
 	}

@@ -73,7 +73,7 @@ void calc_normal()
 		printf("string `%s': %s\n\n", tests[i],
 			 rpn_string ? "Ok" : "Error");
 		print_rpn_string(rpn_string);
-		printf("RESULT: %f\n", rpn(rpn_string));
+		printf("RESULT: %f\n", rpn(rpn_string, 0));
         //must be 3 4 2 * 1 5 - 2 3 ^ ^ / +
 		exit(0);
 	}
@@ -93,8 +93,8 @@ int main(int ac, char **av)
 		run_gui();
 	}
 
-	t_credit_inputdata;
-	memset(&data, 0, sizeof(t_credit));
+	t_credit_input data;
+	memset(&data, 0, sizeof(t_credit_input));
 	t_credit_output *out = NULL;
 
 	switch (args.mode) {
