@@ -182,9 +182,6 @@ static void test_window(mu_Context *ctx) {
         mu_set_focus(ctx, ctx->last_id);
       }
       
-      
-
-      //TODO add fields, must be 8, now 4
       mu_layout_row(ctx, 2, (int[]) { 90, 40 }, 0);
       mu_button(ctx, "Calculate");
     }

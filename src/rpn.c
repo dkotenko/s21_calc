@@ -108,7 +108,6 @@ double rpn(t_dlist *tokens, double x_val)
                 else if (eq("sqrt", s)) calc(values, sqrt(a));
                 else if (eq("log", s)) calc(values, log10(a));
                 else if (eq("ln", s)) calc(values, log(a));
-                //TODO log ln 
             }
         } else {
             if (strchr(OPERANDS, *s)) {

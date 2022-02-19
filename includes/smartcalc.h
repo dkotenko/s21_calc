@@ -7,6 +7,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define SEPARATOR ' '
+
 typedef struct s_token {
 	const char *s;
 	int len;
@@ -34,12 +36,10 @@ typedef struct {
     int type;
 } t_credit_input;
 
-typedef struct {
-	double *monthly_payments;
-	double overpayment;
-	double total_payment;
-	char *message;
-} t_credit_output;
+enum e_credit_type {
+    DIFFERENTIATED,
+    ANNUITY
+};
 
 typedef struct {
 	int month;
@@ -58,6 +58,7 @@ typedef struct {
 } t_deposit_input;
 
 typedef struct {
+	bool is_error;
 	double accrued_interest;
 	double tax_amount;
 	double deposit_by_end;
@@ -65,9 +66,21 @@ typedef struct {
 } t_deposit_output;
 
 typedef struct {
+	double *monthly_payments;
+	double overpayment;
+	double total_payment;
+	char *message;
+	bool is_error;
+} t_credit_output;
+
+typedef struct {
+	bool is_error;
 	double output;
 	char *message;
 } t_calc_output;
+
+
+
 
 
 
@@ -86,5 +99,6 @@ void print_annuity(t_credit_input data, t_credit_output *out);
 void print_differentiated(t_credit_input data, t_credit_output *out);
 void free_credit_output(t_credit_output *out);
 char *answer_to_string(double answ);
+char	**ft_strsplit(char const *s, char c);
 
 #endif

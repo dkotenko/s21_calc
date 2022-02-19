@@ -6,11 +6,6 @@
 #define ERR_CREDIT_TERM "invalid credit term"
 #define ERR_CREDIT_RATE "invalid interest rate"
 
-enum e_credit_type {
-    DIFFERENTIATED,
-    ANNUITY
-};
-
 void print_annuity(t_credit_input data, t_credit_output *out)
 {
     char *two = "  ";
