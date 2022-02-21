@@ -55,6 +55,7 @@ typedef struct {
 	char *repl_amounts;
 	char *with_months;
 	char *with_amounts;
+	bool is_capitalization;
 } t_deposit_input;
 
 typedef struct {

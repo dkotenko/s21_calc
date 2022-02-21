@@ -80,18 +80,38 @@ t_deposit_output calc_deposit(t_deposit_input input)
 
     double amount = input.amount;
     double int_per_month = input.interest_rate / 12;
-    t_dlist_node *tmp_repl = repls ? repls->head : NULL;
-    t_dlist_node *tmp_with = withs ? withs->head : NULL;
-    t_transaction *tmp = NULL;
-    t_transaction *
+    t_dlist_node *tmp_repl = NULL;
+    t_dlist_node *tmp_with = NULL;
+    t_transaction *tmp_repl_tran = NULL;
+    t_transaction *tmp_with_tran = NULL;
+    double accr_interest[input.term_in_months];
 
-    for (int i = 0; i < term_in_months; i++) {
-        if (repls && tmp_repl_trans->month == i + 1) {
-            amount += tmp_repl_trans->amount;
+    if (repls) {
+        tmp_repl = repls->head;
+        
+    }
+    if (withs) {
+        tmp_with = withs->head;
+        tmp_with_tran = (t_transaction *)tmp_with->data;
+    }
+
+    for (int i = 0; i < input.term_in_months; i++) {
+        if (tmp_repl && tmp_repl_tran->month == i + 1) {
+            amount += tmp_repl_tran->amount;
             tmp_repl = tmp_repl->next;
+            tmp_repl_tran = (t_transaction *)tmp_repl->data;
         }
-        if (withs && tmp_with)
-        tmp_with = tmp_with->next;
+        if (tmp_with && tmp_with_tran->month == i + 1) {
+            amount -= tmp_with_tran->amount;
+            if (amount < 0) {
+                amount = 0;
+            }
+            tmp_with = tmp_with->next;
+            tmp_with_tran = (t_transaction *)tmp_with->data;
+        }
+        if (input.is_capitalization) {
+            
+        }
         //где капиталиация?
         //TODO calculations
     }
