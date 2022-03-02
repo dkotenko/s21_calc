@@ -46,6 +46,15 @@ START_TEST(test_calculation) {
 	}
 } END_TEST
 
+START_TEST(test_var_x) {
+	char *s = "x 20 +";
+	int x = 10;
+	t_dlist *dlist = spaced_str_to_dlist(s);
+	double value = rpn(dlist, x);
+	double rpn_result = 30;
+	ck_assert_int_eq(1, equal(value, rpn_result));
+	t_dlist_free(dlist, t_dlist_node_free_simple);
+} END_TEST
 
 Suite *calculation_suite(void) {
   Suite *s;
@@ -55,6 +64,7 @@ Suite *calculation_suite(void) {
   tc_core = tcase_create("Core");
 
   tcase_add_test(tc_core, test_calculation);
+  tcase_add_test(tc_core, test_var_x);
   suite_add_tcase(s, tc_core);
 
   return s;

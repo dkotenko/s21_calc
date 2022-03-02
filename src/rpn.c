@@ -32,18 +32,11 @@ static void t_dlist_print(t_dlist *dlist)
     printf("\n");
     //printf("dlist content end\n");
 }
-/*
-static void t_dlist_print_str(t_dlist *dlist)
-{
-    printf("dlist content:\n");
-    t_dlist_node *tmp = dlist->head;
-    while (tmp) {
-        printf("%s\n", (char *)tmp->data);
-        tmp = tmp->next;
-    }
-    printf("dlist content end\n");
-}
-*/
+
+
+
+
+
 static void push(t_dlist *values, double value)
 {
     if (isnan(value) || isinf(value)) {
@@ -118,7 +111,7 @@ double rpn(t_dlist *tokens, double x_val)
                 else if (*s == '*')	calc(values, a * b);
                 else if (*s == '/')	calc(values, a / b);
                 else if (*s == '^')	calc(values, pow(a, b));
-            } else if (strchr(OPERANDS, *s)) {
+            } else if (strchr(X_VAR, *s)) {
                 free(s);
                 token->data = ft_strdup(x_str);
                 continue ;

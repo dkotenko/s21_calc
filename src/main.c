@@ -14,12 +14,21 @@ typedef struct {
 	int mode;
 } t_args;
 
+#define IS(s, s_orig) (!strcmp(s, s_orig))
+
 static t_args parse_arguments(int ac, char **av)
 {
 	t_args args;
 
 	args.mode = CALC_NORMAL;
 	for (int i = 1; i < ac; i++) {
+		if (IS(av[i], "-h") || IS(av[i], "--help")) {
+			printf("%4s: %s\n", "-co", "--console");
+			printf("%4s: %s\n", "-ca", "--credit-annuity");
+			printf("%4s: %s\n", "-cd", "--credit-differentiated");
+			printf("%4s: %s\n", "-de", "--deposit");
+			exit(0);
+		}
 		args.console = !strcmp(av[i], "-co") || !strcmp(av[i], "--console") ? 1 : 0;
 		args.mode = !strcmp(av[i], "-ca") || !strcmp(av[i], "--credit-annuity") ? CALC_CREDIT_ANNUITY : args.mode;
 		args.mode = !strcmp(av[i], "-cd") || !strcmp(av[i], "--credit-differentiated") ? CALC_CREDIT_DIFFERENTIATED : args.mode;
@@ -37,11 +46,6 @@ static void print_rpn_string(t_dlist *rpn)
 	}
 	printf("\n");
 
-}
-
-void run_gui()
-{
-	return ;
 }
 
 void calc_normal()
@@ -79,12 +83,10 @@ void calc_normal()
 	}
 }
 
-void calc_deposit()
+double calculate(char *s, double x)
 {
-	;
+	return rpn(parse((const char *)s), x);
 }
-
-
 
 int main(int ac, char **av)
 {
@@ -99,7 +101,7 @@ int main(int ac, char **av)
 
 	switch (args.mode) {
 		case CALC_DEPOSIT:
-			calc_deposit();
+			//calc_deposit();
 			break ;
 		case CALC_CREDIT_ANNUITY:
 			out = calc_annuity(&data);

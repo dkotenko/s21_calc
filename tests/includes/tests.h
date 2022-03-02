@@ -6,5 +6,8 @@
 #include <check.h>
 
 Suite *calculation_suite(void);
+Suite *deposit_suite(void);
+
+
 
 #endif

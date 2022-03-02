@@ -42,19 +42,14 @@ enum e_credit_type {
 };
 
 typedef struct {
-	int month;
-	double amount;
-} t_transaction;
-
-typedef struct {
 	double amount;
 	int term_in_months;
 	double interest_rate;
 	double tax_rate;
-	char *repl_months;
-	char *repl_amounts;
-	char *with_months;
-	char *with_amounts;
+	double repl_amount;
+	int repl_every_n_month;
+	double with_amount;
+	int with_every_n_month;
 	bool is_capitalization;
 } t_deposit_input;
 
@@ -80,26 +75,27 @@ typedef struct {
 	char *message;
 } t_calc_output;
 
-
-
-
-
-
 int		init(void);
 t_dlist *parse(const char *s);
-char	*ft_strdup(const char *src);
-char	*ft_strndup(const char *src, size_t n);
-size_t	ft_strnlen(const char *s, size_t maxlen);
-void	*ft_memalloc(size_t size);
-int	handle_error(char *s);
 double rpn(t_dlist *tokens, double x_val);
-int equal(double a, double b);
 t_credit_output *calc_annuity(t_credit_input *data);
 t_credit_output *calc_differentiated(t_credit_input *data);
 void print_annuity(t_credit_input data, t_credit_output *out);
 void print_differentiated(t_credit_input data, t_credit_output *out);
 void free_credit_output(t_credit_output *out);
 char *answer_to_string(double answ);
-char	**ft_strsplit(char const *s, char c);
+t_deposit_output calc_deposit(t_deposit_input input);
+int run_gui(void);
+double calculate(char *s, double x);
 
+/*
+** UTILS
+*/
+char	*ft_strdup(const char *src);
+char	*ft_strndup(const char *src, size_t n);
+size_t	ft_strnlen(const char *s, size_t maxlen);
+void	*ft_memalloc(size_t size);
+int		handle_error(char *s);
+int 	equal(double a, double b);
+char	**ft_strsplit(char const *s, char c);
 #endif

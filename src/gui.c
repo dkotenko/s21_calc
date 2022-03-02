@@ -1,7 +1,10 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "renderer.h"
 #include "microui.h"
+#include "smartcalc.h"
 
 #define NM_BTN_CALC_MODE "Calc mode"
 #define ONE_FIELD {90, 40}
@@ -34,13 +37,16 @@ static void test_window(mu_Context *ctx) {
     if (mu_header_ex(ctx, "Standart", MU_OPT_EXPANDED)) {
       //Set x
       
-      int submitted1 = 0;
-      static char xval_buf[128];
+      //int submitted1 = 0;
+      static char xval_buf[20];
+      static char print_buf[40];
       mu_layout_row(ctx, 2, (int[]) { 105, 40 }, 0);
       mu_label(ctx, "x value (default = 0):");
       if (mu_textbox(ctx, xval_buf, sizeof(xval_buf)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
-        submitted1 = 1;
+        sprintf(print_buf, "x set to %s", xval_buf);
+        write_log(print_buf);
+        //submitted1 = 1;
       }
 
 
@@ -48,15 +54,25 @@ static void test_window(mu_Context *ctx) {
       int submitted = 0;
       mu_layout_row(ctx, 2, (int[]) { -1, -1 }, 0);
       if (mu_textbox(ctx, buf, sizeof(buf)) & MU_RES_SUBMIT) {
-        mu_set_focus(ctx, ctx->last_id);
         submitted = 1;
+        mu_set_focus(ctx, ctx->last_id);
       }
       
-      mu_layout_row(ctx, 4, (int[]) {90, 90, 90, 90}, 0);
-      if (mu_button(ctx, "Calculate")) { submitted = 1; }
+      mu_layout_row(ctx, 4, (int[]) {180, 90, 90, 90}, 0);
+      if (mu_button(ctx, "Calculate expression")) { submitted = 1; }
       if (submitted) {
         write_log(buf);
-        //buf[0] = '\0';
+        double x = strtod(xval_buf, NULL);
+        write_log(xval_buf);
+        char *s = strdup(buf);
+        double result = calculate(s, x);
+        free(s);
+        /*
+        static char res_str[256];
+        sprintf(res_str, "%lf\n", result);
+        write_log(res_str);
+        */
+        
       }
       mu_button(ctx, "Draw plot");
       mu_layout_row(ctx, 2, (int[]) {90, 90}, 0);
@@ -204,8 +220,9 @@ static void log_window(mu_Context *ctx) {
       logbuf_updated = 0;
     }
     
+    /*
     // input textbox + submit button
-    static char buf[128];
+    static char buf[10];
     int submitted = 0;
     mu_layout_row(ctx, 2, (int[]) { -70, -1 }, 0);
     if (mu_textbox(ctx, buf, sizeof(buf)) & MU_RES_SUBMIT) {
@@ -217,7 +234,7 @@ static void log_window(mu_Context *ctx) {
       write_log(buf);
       buf[0] = '\0';
     }
-    
+    */
     mu_end_window(ctx);
   }
 }
@@ -271,7 +288,7 @@ static void style_window(mu_Context *ctx) {
 
 static void process_frame(mu_Context *ctx) {
   mu_begin(ctx);
-  //style_window(ctx);
+  style_window(ctx);
   log_window(ctx);
   test_window(ctx);
   mu_end(ctx);
@@ -299,15 +316,17 @@ static const char key_map[256] = {
 
 static int text_width(mu_Font font, const char *text, int len) {
   if (len == -1) { len = strlen(text); }
+  (void)font;
   return r_get_text_width(text, len);
 }
 
 static int text_height(mu_Font font) {
+  (void)font;
   return r_get_text_height();
 }
 
 
-int main(int argc, char **argv) {
+int run_gui(void) {
   /* init SDL and renderer */
   SDL_Init(SDL_INIT_EVERYTHING);
   r_init();

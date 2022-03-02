@@ -53,5 +53,6 @@ void					t_dlist_free_content(t_dlist *dlist,
 t_dlist_node			*t_dlist_get_by_val(t_dlist *list, void *value);
 t_dlist_node			*t_dlist_get_by_index(t_dlist *list, int index);
 void					t_dlist_node_free_simple(t_dlist_node *node);
+void					t_dlist_print_str(t_dlist *dlist);
 
 #endif

@@ -27,6 +27,13 @@ t_pattern arguments[] = {
 t_pattern functions[] = {
 	{"^sin", A_R, 3, {0}},
 	{"^cos", A_R, 3, {0}},
+	{"^tan", A_R, 3, {0}},
+	{"^asin", A_R, 3, {0}},
+	{"^acos", A_R, 3, {0}},
+	{"^atan", A_R, 3, {0}},
+	{"^ln", A_R, 3, {0}},
+	{"^log", A_R, 3, {0}},
+	{"^sqrt", A_R, 3, {0}},
 	{0}
 };
 
@@ -58,7 +65,7 @@ int init(void)
 {
 	int i;
 	t_pattern *p;
- 
+	
 	for (i = 0, p = operands; p[i].str; i++)
 		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
 			fail("comp", p[i].str);
@@ -77,7 +84,7 @@ static t_pattern* match(const char *s, t_pattern *p, t_token * t, const char **e
 {
 	int i;
 	regmatch_t m;
- 
+	
 	while (*s == ' ' || *s == '\t') {
 		s++;
 	} 
@@ -98,7 +105,7 @@ static t_pattern* match(const char *s, t_pattern *p, t_token * t, const char **e
 }
  
 t_dlist *parse(const char *s) {
-	t_pattern *pattern;
+	t_pattern *pattern = NULL;
 	t_token *t, tok;
 	dl_stack = t_dlist_new();
 	dl_queue = t_dlist_new();
@@ -180,7 +187,8 @@ t_dlist *parse(const char *s) {
 	if (pattern->precedence > 0) {
 		fail("unexpected eol", s);
 	}
-	t_dlist_free(dl_stack, free_node);	
+	t_dlist_free(dl_stack, free_node);
+	//printf("%s\n", "parse_end");
 	return dl_queue;
 }
  

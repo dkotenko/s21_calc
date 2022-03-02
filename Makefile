@@ -9,7 +9,9 @@ NAME=smartcalc
 HEADERS_DIR = includes
 HEADERS_FILES=\
 	$(NAME).h \
-	dlist.h
+	dlist.h \
+	renderer.h \
+	microui.h
 
 SRCS_DIR=src
 
@@ -20,20 +22,13 @@ SRCS_FILES_FOR_TEST=\
 	utils.c \
 	calc_credit.c \
 	calc_deposit.c
+	
+SRCS_NOT_TEST = main.c gui.c renderer.c microui.c
+SRCS_FILES=$(SRCS_FOR_TEST) $(SRCS_NOT_TEST)
 
-SRCS_GUI=\
-	main.c \
-	renderer.c \
-	microui.c
 
-HEADERS_GUI_DIR = microui
-HEADERS_GUI_FILES=\
-	microui.h \
-	renderer.h
-
-SRCS_FILES=$(SRCS_FOR_TEST) main.c
 SRCS_FOR_TEST=$(addprefix $(SRCS_DIR)/, $(SRCS_FILES_FOR_TEST))
-SRCS=$(SRCS_FOR_TEST) $(addprefix $(SRCS_DIR)/, main.c)
+SRCS=$(SRCS_FOR_TEST) $(addprefix $(SRCS_DIR)/, $(SRCS_NOT_TEST))
 
 HEADERS = $(addprefix $(HEADERS_DIR)/, $(HEADERS_FILES))
 OBJ=$(SRCS:.c=.o)
@@ -43,15 +38,17 @@ TEST_INCLUDES_DIR=tests/includes
 TEST_INCLUDES=$(TEST_INCLUDES_DIR)/tests.h
 
 TEST_DIR=tests
-TEST_NAME=test
+TEST_NAME=test.out
 TEST_FILES=test_calculation.c \
-		test_main.c
+		test_main.c \
+		test_deposit.c
 TEST_SRCS=$(addprefix $(TEST_DIR)/$(SRCS_DIR)/, $(TEST_FILES))
 TEST_OBJS=$(TEST_SRCS:%.c=%.o)
 
 REPORT_NAME=report.html
 
-CC=gcc -std=c11 -Wall -Wextra -Werror 
+FLAGS=-std=c11 -Wall -Wextra -Werror -pedantic `sdl2-config --libs` -lGL -lm -O3 -g
+CC=gcc 
 CC_GCOV=gcc -Wall -Wextra -Werror -std=c11 \
 -fcf-protection=full -static-libgcc --coverage -lgcov
 THREADS = 8
@@ -70,13 +67,13 @@ multi:
 test: $(TEST_NAME)
 
 $(TEST_NAME): $(NAME) $(TEST_OBJS)
-	$(CC) $(FLAGS) $(TEST_OBJS) $(OBJ_FOR_TEST) -o $@ -lcheck -lm -lpthread -lrt -lsubunit
+	$(CC) $(TEST_OBJS) $(OBJ_FOR_TEST) -o $@ -lcheck -lm -lpthread -lrt -lsubunit
 
 $(TEST_DIR)/%.o:$(TEST_DIR)/%.c $(TEST_INCLUDES)
-	$(CC) $(FLAGS) -I./$(TEST_DIR)/includes -I./includes -c $< -o $@
+	$(CC) -I./$(TEST_DIR)/includes -I./includes -c $< -o $@
 
 $(NAME): $(OBJ)
-	$(CC) $(FLAGS) $(OBJ) -o $@ -lm
+	$(CC) $(OBJ) -o $@ $(FLAGS)
 	
 	@echo -n $(COLOR_GREEN)
 	@echo =================================
