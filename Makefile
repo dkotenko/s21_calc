@@ -6,6 +6,8 @@ COLOR_YELLOW="\033[0;33m"
 COLOR_RESET="\033[0m"
 
 NAME=smartcalc
+VERSION=V1.0
+ARCHIVE_NAME=$(NAME)-$(VERSION).tar.gz
 HEADERS_DIR = includes
 HEADERS_FILES=\
 	$(NAME).h \
@@ -23,7 +25,7 @@ SRCS_FILES_FOR_TEST=\
 	calc_credit.c \
 	calc_deposit.c
 	
-SRCS_NOT_TEST = main.c gui.c renderer.c microui.c
+SRCS_NOT_TEST = main.c gui.c renderer.c microui.c graph.c
 SRCS_FILES=$(SRCS_FOR_TEST) $(SRCS_NOT_TEST)
 
 
@@ -41,7 +43,8 @@ TEST_DIR=tests
 TEST_NAME=test.out
 TEST_FILES=test_calculation.c \
 		test_main.c \
-		test_deposit.c
+		test_deposit.c \
+		test_credit.c
 TEST_SRCS=$(addprefix $(TEST_DIR)/$(SRCS_DIR)/, $(TEST_FILES))
 TEST_OBJS=$(TEST_SRCS:%.c=%.o)
 
@@ -59,12 +62,36 @@ all:
 gcov_report: CC=$(CC_GCOV)
 gcov_report: fclean test
 	./$(TEST_NAME)
-	gcovr -r . -f src --html -o $(REPORT_NAME)
+	gcovr -r . -f src --html-details -o $(REPORT_NAME)
 
 multi:
 	$(MAKE) -j$(THREADS) all
 
 test: $(TEST_NAME)
+
+install: all
+	install -m 755 -d includes $(path)
+	install -m 755 -d microui $(path)
+	install -m 755 -d scripts $(path)
+	install -m 755 -d src $(path)
+	install -m 755 -d tests $(path)
+	install -m 755 * $(path)
+
+uninstall:
+	make -c $(path) fclean
+	rm -rf $(path)/Makefile
+	rm -rf $(path)/includes
+	rm -rf $(path)/microui
+	rm -rf $(path)/scripts
+	rm -rf $(path)/src
+	rm -rf $(path)/test
+
+dist:
+	touch $(ARCHIVE_NAME)
+	tar -czf $(ARCHIVE_NAME) --exclude=$(ARCHIVE_NAME) .
+
+dvi:
+	./scripts/make_dvi.sh
 
 $(TEST_NAME): $(NAME) $(TEST_OBJS)
 	$(CC) $(TEST_OBJS) $(OBJ_FOR_TEST) -o $@ -lcheck -lm -lpthread -lrt -lsubunit
@@ -93,9 +120,12 @@ clean:
 	find . -name "*.gcda" -type f -delete
 	find . -name "*.gcno" -type f -delete
 	/bin/rm -f $(REPORT_NAME)
+	/bin/rm -f report.* plot.txt
 fclean: clean
 	/bin/rm -f $(NAME)
 	/bin/rm -f $(TEST_NAME)
+distclean: fclean
+	/bin/rm -f $(ARCHIVE_NAME)
 re: fclean all
 
 

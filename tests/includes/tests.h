@@ -7,6 +7,7 @@
 
 Suite *calculation_suite(void);
 Suite *deposit_suite(void);
+Suite *credit_suite(void);
 
 
 

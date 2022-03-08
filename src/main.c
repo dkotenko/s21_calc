@@ -20,6 +20,7 @@ static t_args parse_arguments(int ac, char **av)
 {
 	t_args args;
 
+	memset(&args, 0, sizeof(t_args));
 	args.mode = CALC_NORMAL;
 	for (int i = 1; i < ac; i++) {
 		if (IS(av[i], "-h") || IS(av[i], "--help")) {
@@ -63,29 +64,50 @@ void calc_normal()
 		0
 	};
  
-	if (!init()) {
-		return ;
-	}
+	//if (!init()) {
+	//	return ;
+	//}
 
 	t_dlist *rpn_string;
-
+	t_rpn_transit t;
+	
 	for (i = 0; tests[i]; i++) {
 		printf("Testing string `%s'   <enter>\n", tests[i]);
-		//getchar();
-
-		rpn_string = parse(tests[i]);
+		t = parse(tests[i]);
+		rpn_string = t.list;
 		printf("string `%s': %s\n\n", tests[i],
 			 rpn_string ? "Ok" : "Error");
-		print_rpn_string(rpn_string);
-		printf("RESULT: %f\n", rpn(rpn_string, 0));
-        //must be 3 4 2 * 1 5 - 2 3 ^ ^ / +
-		exit(0);
+		if (t.is_error) {
+			printf("ERROR: %s\n", t.message);
+			free(t.message);
+		} else {
+			print_rpn_string(rpn_string);
+			t_calc_output out = rpn(rpn_string, 0);
+			if (out.is_error) {
+				printf("ERROR: %s\n", out.message);
+				free(out.message);
+			} else {
+				printf("RESULT: %f\n", out.output);
+				t_dlist_free(rpn_string, t_dlist_node_free_simple);
+			}
+		}
 	}
 }
 
-double calculate(char *s, double x)
+t_calc_output calculate(char *s, double x)
 {
-	return rpn(parse((const char *)s), x);
+	t_calc_output out;
+	t_rpn_transit t;
+	
+	t = parse((const char *)s);
+	if (t.is_error) {
+		out.is_error = true;
+		out.message = t.message;
+	} else {
+		out = rpn(t.list, x);
+		t_dlist_free(t.list, t_dlist_node_free_simple);
+	}
+	return out;
 }
 
 int main(int ac, char **av)
@@ -97,21 +119,32 @@ int main(int ac, char **av)
 
 	t_credit_input data;
 	memset(&data, 0, sizeof(t_credit_input));
-	t_credit_output *out = NULL;
+	t_credit_output out;
 
 	switch (args.mode) {
 		case CALC_DEPOSIT:
 			//calc_deposit();
 			break ;
 		case CALC_CREDIT_ANNUITY:
-			out = calc_annuity(&data);
-			print_annuity(data, out);
-			free_credit_output(out);
+			out = calc_annuity(data);
+			if (out.is_error) {
+				printf("%s", out.message);
+				free(out.message);
+			} else {
+				print_annuity(data, out);
+				free(out.monthly_payments);
+			}
+			
 			break ;
 		case CALC_CREDIT_DIFFERENTIATED:
-			out = calc_differentiated(&data);
-			print_differentiated(data, out);
-			free_credit_output(out);
+			out = calc_differentiated(data);
+			if (out.is_error) {
+				printf("%s", out.message);
+				free(out.message);
+			} else {
+				print_differentiated(data, out);
+				free(out.monthly_payments);
+			}
 			break ;
 		default:
 			calc_normal();

@@ -41,6 +41,11 @@ enum e_credit_type {
     ANNUITY
 };
 
+enum e_capitalization {
+	CAPITALIZ_NO,
+	CAPITALIZ_YES
+};
+
 typedef struct {
 	double amount;
 	int term_in_months;
@@ -75,18 +80,26 @@ typedef struct {
 	char *message;
 } t_calc_output;
 
+typedef struct {
+	bool is_error;
+	char *message;
+	t_dlist *list;
+} t_rpn_transit;
+
 int		init(void);
-t_dlist *parse(const char *s);
-double rpn(t_dlist *tokens, double x_val);
-t_credit_output *calc_annuity(t_credit_input *data);
-t_credit_output *calc_differentiated(t_credit_input *data);
-void print_annuity(t_credit_input data, t_credit_output *out);
-void print_differentiated(t_credit_input data, t_credit_output *out);
-void free_credit_output(t_credit_output *out);
+t_rpn_transit parse(const char *s);
+t_calc_output rpn(t_dlist *tokens, double x_val);
+t_credit_output calc_annuity(t_credit_input data);
+t_credit_output calc_differentiated(t_credit_input data);
+t_credit_output calc_credit(t_credit_input data);
+void print_annuity(t_credit_input data, t_credit_output out);
+void print_differentiated(t_credit_input data, t_credit_output out);
 char *answer_to_string(double answ);
 t_deposit_output calc_deposit(t_deposit_input input);
 int run_gui(void);
-double calculate(char *s, double x);
+t_calc_output calculate(char *s, double x);
+void draw_plot(int steps, double min, double max, t_dlist *tokens);
+void show_plot(void);
 
 /*
 ** UTILS

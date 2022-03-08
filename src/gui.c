@@ -9,8 +9,20 @@
 #define NM_BTN_CALC_MODE "Calc mode"
 #define ONE_FIELD {90, 40}
 #define TWO_FIELDS {90, 40, 90, 40}
-
+#define CALCULATE_WIDTH 180
 #define MAIN_SIZE 
+
+#define write_error_calc(output) { \
+  write_log(output.message); \
+  free(output.message); \
+}
+
+#define empty_row() { \
+  mu_layout_row(ctx, 2, (int[]) {90, 90}, 0); \
+  mu_text(ctx, ""); \
+}
+
+#define isnt_empty(s) strcmp(s, "")
 
 static  char logbuf[64000];
 static   int logbuf_updated = 0;
@@ -22,7 +34,6 @@ static void write_log(const char *text) {
   strcat(logbuf, text);
   logbuf_updated = 1;
 }
-
 
 static void test_window(mu_Context *ctx) {
   /* do window */
@@ -39,6 +50,7 @@ static void test_window(mu_Context *ctx) {
       
       //int submitted1 = 0;
       static char xval_buf[20];
+      double x;
       static char print_buf[40];
       mu_layout_row(ctx, 2, (int[]) { 105, 40 }, 0);
       mu_label(ctx, "x value (default = 0):");
@@ -58,25 +70,65 @@ static void test_window(mu_Context *ctx) {
         mu_set_focus(ctx, ctx->last_id);
       }
       
-      mu_layout_row(ctx, 4, (int[]) {180, 90, 90, 90}, 0);
+      mu_layout_row(ctx, 4, (int[]) {CALCULATE_WIDTH, 90, 90, 90}, 0);
       if (mu_button(ctx, "Calculate expression")) { submitted = 1; }
-      if (submitted) {
+      if (submitted && isnt_empty(buf)) {
         write_log(buf);
-        double x = strtod(xval_buf, NULL);
-        write_log(xval_buf);
-        char *s = strdup(buf);
-        double result = calculate(s, x);
-        free(s);
-        /*
-        static char res_str[256];
-        sprintf(res_str, "%lf\n", result);
-        write_log(res_str);
-        */
-        
+
+        x = strtod(xval_buf, NULL);
+        t_calc_output output = calculate(buf, x);
+        if (output.is_error) {
+          write_error_calc(output);
+        } else {
+          static char res_str[256];
+          sprintf(res_str, "=%lf", output.output);
+          write_log(res_str);
+        }
       }
-      mu_button(ctx, "Draw plot");
-      mu_layout_row(ctx, 2, (int[]) {90, 90}, 0);
-      mu_text(ctx, "");
+
+      empty_row();
+
+      mu_layout_row(ctx, 6, (int[]) {40, 40, 40, 40, 40, 40}, 0);
+      static char steps_buf[32];
+      int steps = 1000;
+      mu_label(ctx, "steps:");
+      if (mu_textbox(ctx, steps_buf, sizeof(steps_buf)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+
+      static char min_x_buf[32];
+      mu_label(ctx, "min x:");
+      double min_x_val = -100;
+      if (mu_textbox(ctx, min_x_buf, sizeof(min_x_buf)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+
+      static char max_x_buf[32];
+      mu_label(ctx, "max x:");
+      double max_x_val = 100;
+      if (mu_textbox(ctx, max_x_buf, sizeof(max_x_buf)) & MU_RES_SUBMIT) {
+        mu_set_focus(ctx, ctx->last_id);
+      }
+
+      mu_layout_row(ctx, 2, (int[]) {CALCULATE_WIDTH, 90}, 0);
+      int sub_plot = 0;
+      if (mu_button(ctx, "Draw plot")) {sub_plot = 1;} ;
+      if (sub_plot && isnt_empty(buf)) {
+        steps = isnt_empty(steps_buf) ? strtod(steps_buf, NULL) : steps;
+        min_x_val = isnt_empty(min_x_buf) ? strtod(min_x_buf, NULL) : min_x_val;
+        max_x_val = isnt_empty(max_x_buf) ? strtod(max_x_buf, NULL) : max_x_val;
+        t_rpn_transit rpn_trans = parse(buf);
+        t_calc_output output = calculate(buf, x); 
+        if (rpn_trans.is_error) {
+          write_error_calc(output);
+        } else {
+          t_dlist *tokens = rpn_trans.list;
+        draw_plot(steps, min_x_val, max_x_val, tokens);
+        show_plot();
+        t_dlist_free(tokens, t_dlist_node_free_simple);
+        }
+      }
+      empty_row();
     }
 
     /* CREDIT */
@@ -107,14 +159,52 @@ static void test_window(mu_Context *ctx) {
       
       mu_layout_row(ctx, 3, (int[]) {90, 80, 100}, 0);
       mu_label(ctx, "credit type:");
-      mu_checkbox(ctx, "annuity", &checks[0]);
-      mu_checkbox(ctx, "differentiated", &checks[1]);
+      mu_checkbox(ctx, "annuity", &checks[ANNUITY]);
+      mu_checkbox(ctx, "differentiated", &checks[DIFFERENTIATED]);
       mu_layout_end_column(ctx);
+      int credit_sub = 0;
+      mu_layout_row(ctx, 2, (int[]) { CALCULATE_WIDTH, 40 }, 0);
+      if (mu_button(ctx, "Calculate credit")) {credit_sub = 1;};
+      t_credit_input input;
+      input.amount = isnt_empty(cred_amount) ? strtod(cred_amount, NULL) : 10000;
+      input.term_in_months = isnt_empty(cred_term) ? atoi(cred_term) : 12;
+      input.interest_rate = isnt_empty(cred_interest) ? strtod(cred_interest, NULL) : 0.1;
+      if (credit_sub) {
+        if (checks[DIFFERENTIATED] && checks[ANNUITY]) {
+          write_log("Error: credit could not be both annuity and differentiated");
+        } else if (input.amount <= 0) {
+          write_log("Error: credit amount must be positive");
+        } else if (input.interest_rate <= 0) {
+          write_log("Error: credit interest must be positive");
+        } else if (input.term_in_months <= 0) {
+          write_log("Error: credit term must be positive");
+        } else {
+          input.type = checks[ANNUITY] ? ANNUITY : DIFFERENTIATED;
+          char conditions[256];
+          sprintf(conditions, "credit input: amount = %f, term in months = %d, interest rate = %f, type = %s",\
+           input.amount, input.term_in_months, input.interest_rate, checks[ANNUITY] ? "annuity" : "differentiated");
+          write_log(conditions);
+          t_credit_output cred_output = calc_credit(input);
+          if (cred_output.is_error) {
+				    write_log(cred_output.message);
+				    free(cred_output.message);
+          } else {
+            char credit_out_buf[256];
+            sprintf(credit_out_buf, "credit output: total payment = %f, overpayment = %f, payments per months:",\
+              cred_output.total_payment, cred_output.overpayment);
+            write_log(credit_out_buf);
+            char temp_month_payment[50];
+            for (int i = 0; i < input.term_in_months; i++) {
+              sprintf(temp_month_payment, "month %3d: %f", i + 1, cred_output.monthly_payments[i]);
+              write_log(temp_month_payment);
+              memset(temp_month_payment, 0, sizeof(double) * input.term_in_months);
+            }
+            write_log("==========================");
+          }
+        }
+      }
 
-      mu_layout_row(ctx, 2, (int[]) { 90, 40 }, 0);
-      mu_button(ctx, "Calculate");
-      mu_layout_row(ctx, 2, (int[]) { 90, 40 }, 0);
-      mu_text(ctx, "");
+      empty_row();
     }
     
     /* DEPOSIT */
@@ -124,7 +214,7 @@ static void test_window(mu_Context *ctx) {
 
       
       static char dep_amount[128];
-      mu_layout_row(ctx, 4, (int[]) TWO_FIELDS, 0);
+      mu_layout_row(ctx, 4, (int[]) {90, 80, 50, 40}, 0);
       mu_label(ctx, "amount:");
       if (mu_textbox(ctx, dep_amount, sizeof(dep_amount)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
@@ -137,7 +227,7 @@ static void test_window(mu_Context *ctx) {
       }
 
       static char dep_interest[128];
-      mu_layout_row(ctx, 4, (int[]) TWO_FIELDS, 0);
+      mu_layout_row(ctx, 4, (int[]) {90, 80, 50, 40}, 0);
       mu_label(ctx, "interest rate:");
       if (mu_textbox(ctx, dep_interest, sizeof(dep_interest)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
@@ -150,29 +240,29 @@ static void test_window(mu_Context *ctx) {
       }
 
       mu_layout_begin_column(ctx);
-      static int checks[3] = { 1, 0 };
+      static int checks_interest[3] = {0, 1};
       
       mu_layout_row(ctx, 3, (int[]) {90, 80, 100}, 0);
       mu_label(ctx, "capit. of interest:");
-      mu_checkbox(ctx, "yes", &checks[0]);
-      mu_checkbox(ctx, "no", &checks[1]);
+      mu_checkbox(ctx, "yes", &checks_interest[CAPITALIZ_YES]);
+      mu_checkbox(ctx, "no", &checks_interest[CAPITALIZ_NO]);
       mu_layout_end_column(ctx);
 
       /* replenishments */
       mu_layout_row(ctx, 2, (int[]) {200, -1}, 0);
-      mu_label(ctx, "replenishments    (delimeter = ' ; ' )");
+      mu_label(ctx, "replenishments");
 
-      mu_layout_row(ctx, 3, (int[]) {10, 80, -1}, 0);
-      static char repl_times[1024];
+      mu_layout_row(ctx, 3, (int[]) {10, 110, 80}, 0);
+      static char repl_times[10];
       mu_text(ctx, "");
-      mu_label(ctx, "months:");
+      mu_label(ctx, "every n month");
       if (mu_textbox(ctx, repl_times, sizeof(repl_times)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
       }
-      mu_layout_row(ctx, 3, (int[]) {10, 80, -1}, 0);
-      static char repl_amounts[1024];
+      mu_layout_row(ctx, 3, (int[]) {10, 110, 80}, 0);
+      static char repl_amounts[100];
       mu_text(ctx, "");
-      mu_label(ctx, "amounts:");
+      mu_label(ctx, "amount per month");
       if (mu_textbox(ctx, repl_amounts, sizeof(repl_amounts)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
       }
@@ -180,26 +270,99 @@ static void test_window(mu_Context *ctx) {
 
       /* withdrawals */
       mu_layout_row(ctx, 2, (int[]) {200, -1}, 0);
-      mu_label(ctx, "withdrawals    (delimeter = ' ; ' )");
+      mu_label(ctx, "withdrawals");
 
-      mu_layout_row(ctx, 3, (int[]) {10, 80, -1}, 0);
-      static char widr_times[1024];
+      mu_layout_row(ctx, 3, (int[]) {10, 110, 80}, 0);
+      static char widr_times[10];
       mu_text(ctx, "");
-      mu_label(ctx, "months:");
+      mu_label(ctx, "every n month");
       if (mu_textbox(ctx, widr_times, sizeof(widr_times)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
       }
 
-      mu_layout_row(ctx, 3, (int[]) {10, 80, -1}, 0);
-      static char widr_amounts[1024];
+      mu_layout_row(ctx, 3, (int[]) {10, 110, 80}, 0);
+      static char widr_amounts[102];
       mu_text(ctx, "");
-      mu_label(ctx, "amounts:");
+      mu_label(ctx, "amount per month");
       if (mu_textbox(ctx, widr_amounts, sizeof(widr_amounts)) & MU_RES_SUBMIT) {
         mu_set_focus(ctx, ctx->last_id);
       }
       
-      mu_layout_row(ctx, 2, (int[]) { 90, 40 }, 0);
-      mu_button(ctx, "Calculate");
+      mu_layout_row(ctx, 2, (int[]) { CALCULATE_WIDTH, 40 }, 0);
+      int deposit_sub = 0;
+      if (mu_button(ctx, "Calculate deposit")) {
+        deposit_sub = 1;
+      }
+      if (deposit_sub) {
+        t_deposit_input deposit_input;
+        deposit_input.amount = isnt_empty(dep_amount) ? strtod(dep_amount, NULL) : 10000;
+        deposit_input.term_in_months = isnt_empty(dep_term) ? atoi(dep_term) : 12;
+        deposit_input.interest_rate = isnt_empty(dep_interest) ? strtod(dep_interest, NULL) : 0.1;
+        deposit_input.tax_rate = isnt_empty(dep_tax) ? strtod(dep_tax, NULL) : 0;
+        deposit_input.repl_amount = isnt_empty(repl_amounts) ? strtod(repl_amounts, NULL) : 0;
+        deposit_input.repl_every_n_month = isnt_empty(repl_times) ? strtod(repl_times, NULL) : 0;
+        deposit_input.with_amount = isnt_empty(widr_amounts) ? strtod(widr_amounts, NULL) : 0;
+        deposit_input.with_every_n_month = isnt_empty(widr_times) ? strtod(widr_times, NULL) : 0;
+        deposit_input.is_capitalization = checks_interest[CAPITALIZ_NO] ? CAPITALIZ_NO : CAPITALIZ_YES;
+
+        if (deposit_input.amount <= 0) {
+          write_log("Error: deposit amount must be positive");
+        } else if (deposit_input.interest_rate <= 0) {
+          write_log("Error: deposit interest must be positive");
+        } else if (deposit_input.term_in_months <= 0) {
+          write_log("Error: deposit term must be positive");
+        } else if (deposit_input.tax_rate < 0) {
+          write_log("Error: deposit term must be null or positive");
+        } else if (deposit_input.repl_amount < 0) {
+          write_log("Error: deposit replenishment amount must be null or positive");
+        } else if (deposit_input.with_amount < 0) {
+          write_log("Error: deposit withdrawal amount must be null or positive");
+        } else if (deposit_input.with_every_n_month < 0) {
+          write_log("Error: deposit withdrawal every n month amount must be null or positive");
+        } else if (deposit_input.repl_every_n_month < 0) {
+          write_log("Error: deposit replenishment every n month amount must be null or positive");
+        } else {
+
+
+          char deposit_conditions[256];
+          sprintf(deposit_conditions, "deposit input: amount = %f, term in months = %d,"\
+            "interest rate = %f, tax rate = %f, capitalization = %s",\
+            deposit_input.amount, deposit_input.term_in_months, deposit_input.interest_rate, deposit_input.tax_rate, \
+            checks_interest[CAPITALIZ_NO] ? "no" : "yes");
+          write_log(deposit_conditions);
+
+          char deposit_repl_conditions[256];
+          if (deposit_input.repl_every_n_month && deposit_input.repl_amount) {
+            sprintf(deposit_repl_conditions, "replenishment: yes, every %d month, amount = %f",\
+            deposit_input.repl_every_n_month, deposit_input.repl_amount);
+          } else {
+            sprintf(deposit_repl_conditions, "replenishment: no");
+          }
+          write_log(deposit_repl_conditions);
+
+          char deposit_with_conditions[256];
+          if (deposit_input.with_every_n_month && deposit_input.with_amount) {
+            sprintf(deposit_with_conditions, "withdrawals: yes, every %d month, amount = %f",\
+            deposit_input.with_every_n_month, deposit_input.with_amount);
+          } else {
+            sprintf(deposit_with_conditions, "withdrawals: no");
+          }
+          write_log(deposit_with_conditions);
+        
+
+          t_deposit_output deposit_output = calc_deposit(deposit_input);
+          if (deposit_output.is_error) {
+              write_log(deposit_output.message);
+              free(deposit_output.message);
+          } else {
+            char deposit_out_buf[256];
+            sprintf(deposit_out_buf, "deposit output: deposit by end = %f, accrued interest = %f, tax amount = %f",\
+                deposit_output.deposit_by_end, deposit_output.accrued_interest, deposit_output.tax_amount);
+            write_log(deposit_out_buf);
+            write_log("==========================");
+          }
+        }
+      }
     }
     mu_end_window(ctx);
   }
@@ -219,22 +382,6 @@ static void log_window(mu_Context *ctx) {
       panel->scroll.y = panel->content_size.y;
       logbuf_updated = 0;
     }
-    
-    /*
-    // input textbox + submit button
-    static char buf[10];
-    int submitted = 0;
-    mu_layout_row(ctx, 2, (int[]) { -70, -1 }, 0);
-    if (mu_textbox(ctx, buf, sizeof(buf)) & MU_RES_SUBMIT) {
-      mu_set_focus(ctx, ctx->last_id);
-      submitted = 1;
-    }
-    if (mu_button(ctx, "Calculate")) { submitted = 1; }
-    if (submitted) {
-      write_log(buf);
-      buf[0] = '\0';
-    }
-    */
     mu_end_window(ctx);
   }
 }
@@ -270,6 +417,10 @@ static void style_window(mu_Context *ctx) {
     { NULL }
   };
 
+  
+
+  //Style Editor window from microUI demo, DEPRECATED
+
   if (mu_begin_window(ctx, "Style Editor", mu_rect(350, 250, 300, 240))) {
     int sw = mu_get_current_container(ctx)->body.w * 0.14;
     mu_layout_row(ctx, 6, (int[]) { 80, sw, sw, sw, sw, -1 }, 0);
@@ -283,6 +434,7 @@ static void style_window(mu_Context *ctx) {
     }
     mu_end_window(ctx);
   }
+  
 }
 
 

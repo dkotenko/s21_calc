@@ -1,4 +1,4 @@
-
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include "smartcalc.h"
@@ -6,13 +6,13 @@
 t_pattern end_of_string = {"", A_NONE, 0, {0}};
  
 t_pattern operands[] = {
-	{"^\\)",	A_NONE, -1, {0}},
-	{"^\\*\\*",	A_R, 3, {0}},
-	{"^\\^",	A_R, 3, {0}},
-	{"^\\*",	A_L, 2, {0}},
-	{"^/",		A_L, 2, {0}},
-	{"^\\+",	A_L, 1, {0}},
-	{"^-",		A_L, 1, {0}},
+	{")",	A_NONE, -1, {0}},
+	{"mod",	A_R, 3, {0}},
+	{"^",	A_R, 3, {0}},
+	{"*",	A_L, 2, {0}},
+	{"/",		A_L, 2, {0}},
+	{"+",	A_L, 1, {0}},
+	{"-",		A_L, 1, {0}},
 	{0}
 };
  
@@ -22,64 +22,105 @@ t_pattern arguments[] = {
 	{"^[xX]", 0, 0, {0}},
 	{"^\\(", A_L, -1, {0}},
 	{0}
-};
+};	
 
 t_pattern functions[] = {
-	{"^sin", A_R, 3, {0}},
-	{"^cos", A_R, 3, {0}},
-	{"^tan", A_R, 3, {0}},
-	{"^asin", A_R, 3, {0}},
-	{"^acos", A_R, 3, {0}},
-	{"^atan", A_R, 3, {0}},
-	{"^ln", A_R, 3, {0}},
-	{"^log", A_R, 3, {0}},
-	{"^sqrt", A_R, 3, {0}},
+	{"asin", A_R, 3, {0}},
+	{"acos", A_R, 3, {0}},
+	{"atan", A_R, 3, {0}},
+	{"sin", A_R, 3, {0}},
+	{"cos", A_R, 3, {0}},
+	{"tan", A_R, 3, {0}},
+	{"ln", A_R, 3, {0}},
+	{"log", A_R, 3, {0}},
+	{"sqrt", A_R, 3, {0}},
 	{0}
 };
 
-
-
-t_token stack[256]; /* assume these are big enough */
-t_token queue[256];
-t_dlist *dl_stack;
-t_dlist *dl_queue;
-
-int l_queue, l_stack;
-#define qpush(x) queue[l_queue++] = x
-#define spush(x) stack[l_stack++] = x
-#define spop()   stack[--l_stack]
-#define WHITE_SPACE " \t\n\r\f"
-
-static void free_node(t_dlist_node * node)
+static t_pattern *parse_number(const char *s, int *num_len, t_pattern *p)
 {
-	free(node->data);
-	free(node);
+	char *s_start = (char *)s;
+
+	if (*s == '+' || *s == '-') {
+		s++;
+	}
+
+	if (!*s || !isdigit(*s)) {
+		*num_len = s - s_start;
+		return 0;
+	}
+
+	while (isdigit(*s)) {
+			s++;
+		}
+
+	if (*s == '.') {
+		s++;
+		while (isdigit(*s)) {
+			s++;
+		}	
+	}
+	*num_len = s - s_start;
+	return p;
+
 }
 
-#define fail(s1, s2) { \
-	fprintf(stderr, "[Error %s] %s\n", s1, s2); \
-	return 0; }
+static t_pattern *match_args(const char *s, t_pattern *p, t_token * t, const char **e)
+{
+	while (*s == ' ' || *s == '\t') {
+		s++;
+	} 
+	*e = s;
 
- 
-int init(void)
+	if (!*s) {
+		return &end_of_string;
+	}
+
+	if (*s == '+' || *s == '-' || isdigit(*s)) {
+		int num_len = 0;
+		t_pattern *to_return = parse_number(s, &num_len, p);
+		t->s = s;
+		*e = s + (t->len = num_len);
+		return to_return;
+	} else if (*s == 'x' || *s == 'X') {
+		t->s = s;
+		*e = s + (t->len = 1);
+		return p + 1;
+	} else if (*s == '(') {
+		t->s = s;
+		*e = s + (t->len = 1);
+		return p + 2;
+	}
+	return 0;
+}
+
+static t_pattern* match(const char *s, t_pattern *p, t_token * t, const char **e)
 {
 	int i;
-	t_pattern *p;
 	
-	for (i = 0, p = operands; p[i].str; i++)
-		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
-			fail("comp", p[i].str);
+	while (*s == ' ' || *s == '\t') {
+		s++;
+	} 
+	*e = s;
  
-	for (i = 0, p = arguments; p[i].str; i++)
-		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
-			fail("comp", p[i].str);
-
-	for (i = 0, p = functions; p[i].str; i++)
-		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
-			fail("comp", p[i].str);
-	return 1;
+	if (!*s) {
+		return &end_of_string;
+	} 
+ 
+	int s_len = strlen(s);
+	for (i = 0; p[i].str; i++) {
+		int pattern_len = strlen(p[i].str);
+		if (pattern_len > s_len || strncmp(p[i].str, s, pattern_len)) {
+			continue;
+		}
+		t->s = s;
+		*e = s + (t->len = pattern_len);
+		return p + i;
+	}
+	return 0;
 }
- 
+
+/*
 static t_pattern* match(const char *s, t_pattern *p, t_token * t, const char **e)
 {
 	int i;
@@ -103,15 +144,68 @@ static t_pattern* match(const char *s, t_pattern *p, t_token * t, const char **e
 	}
 	return 0;
 }
+*/
+
+t_token stack[256]; /* assume these are big enough */
+t_token queue[256];
+t_dlist *dl_stack;
+t_dlist *dl_queue;
+
+int l_queue, l_stack;
+#define qpush(x) queue[l_queue++] = x
+#define spush(x) stack[l_stack++] = x
+#define spop()   stack[--l_stack]
+#define WHITE_SPACE " \t\n\r\f"
+
+void free_node(t_dlist_node * node)
+{
+	free(node->data);
+	free(node);
+}
+
+#define fail(s1, s2) { \
+	char err_buf[100]; \
+	fprintf(stderr, "[Error %s] %s\n", s1, s2); \
+	sprintf(err_buf, "[Error %s] %s\n", s1, s2); \
+	transit.is_error = true; \
+	transit.message = ft_strdup(err_buf); \
+	transit.list = NULL; \
+	t_dlist_free(dl_stack, free_node); \
+	t_dlist_free(dl_funct, free_node); \
+	t_dlist_free(dl_queue, free_node); \
+	return transit; }
+
+/*
+int init(void)
+{
+	int i;
+	t_pattern *p;
+	
+	for (i = 0, p = operands; p[i].str; i++)
+		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
+			fail("comp", p[i].str);
  
-t_dlist *parse(const char *s) {
+	for (i = 0, p = arguments; p[i].str; i++)
+		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
+			fail("comp", p[i].str);
+
+	for (i = 0, p = functions; p[i].str; i++)
+		if (regcomp(&(p[i].re), p[i].str, REG_NEWLINE|REG_EXTENDED))
+			fail("comp", p[i].str);
+	return 1;
+}
+*/
+
+ 
+t_rpn_transit parse(const char *s) {
 	t_pattern *pattern = NULL;
 	t_token *t, tok;
 	dl_stack = t_dlist_new();
 	dl_queue = t_dlist_new();
 	t_dlist *dl_funct = t_dlist_new();
 	int precedence_booster;
-	
+	t_rpn_transit transit;
+	memset(&transit, 0, sizeof(t_rpn_transit));
 	//printf("%s\n", s);
 	precedence_booster = l_queue = l_stack = 0;
 	while (*s) {
@@ -121,7 +215,7 @@ t_dlist *parse(const char *s) {
 			t_dlist_append(dl_funct, t_dlist_node_new(ft_strndup(tok.s, tok.len), sizeof(char)));
 		}
 
-		pattern = match(s, arguments, &tok, &s);
+		pattern = match_args(s, arguments, &tok, &s);
 		if (!pattern || pattern == &end_of_string) {
 			fail("parse arg", s);
 		}
@@ -178,7 +272,9 @@ t_dlist *parse(const char *s) {
 				fail("unmatched (", s);
 			}
 			t_dlist_free(dl_stack, free_node);
-			return dl_queue;
+			t_dlist_free(dl_funct, free_node);
+			transit.list = dl_queue;
+			return transit;
 		}
 		t_dlist_append(dl_stack, t_dlist_node_new(ft_strndup(tok.s, tok.len), sizeof(char)));
 		spush(tok);
@@ -188,7 +284,9 @@ t_dlist *parse(const char *s) {
 		fail("unexpected eol", s);
 	}
 	t_dlist_free(dl_stack, free_node);
+	t_dlist_free(dl_funct, free_node);
+	transit.list = dl_queue;
 	//printf("%s\n", "parse_end");
-	return dl_queue;
+	return transit;
 }
  

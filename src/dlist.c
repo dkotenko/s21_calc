@@ -202,11 +202,11 @@ t_dlist_node	*t_dlist_append(t_dlist *list, t_dlist_node *new)
 
 void t_dlist_print_str(t_dlist *dlist)
 {
-    printf("dlist content:\n");
+    //printf("dlist content:\n");
     t_dlist_node *tmp = dlist->head;
     while (tmp) {
         printf("%s\n", (char *)tmp->data);
         tmp = tmp->next;
     }
-    printf("dlist content end\n");
+    //printf("dlist content end\n");
 }

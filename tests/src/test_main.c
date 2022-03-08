@@ -5,7 +5,9 @@ int main(void) {
     SRunner *runner;
     
     runner = srunner_create(calculation_suite());          
-    //srunner_add_suite(runner, create_suite());
+    srunner_add_suite(runner, deposit_suite());
+    srunner_add_suite(runner, credit_suite());
+    
     
     srunner_run_all(runner, CK_NORMAL);  
     no_failed = srunner_ntests_failed(runner); 

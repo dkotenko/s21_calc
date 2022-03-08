@@ -5,12 +5,24 @@
 #include <ctype.h>
 #include "smartcalc.h"
 
-static void die(const char *msg)
-{
-	fprintf(stderr, "%s", msg);
-	abort();
+
+t_calc_output output;
+
+#define fail(s1) { \
+	char err_buf[100]; \
+	fprintf(stderr, "[Error] %s\n", s1); \
+	sprintf(err_buf, "[Error] %s\n", s1); \
+	output.is_error = true; \
+	output.message = ft_strdup(err_buf); \
+    }
+
+#define check_pop() { \
+    if (output.is_error) { \
+        output.output = 0; \
+        return output; \
+    } \
 }
- 
+
 #define OPERANDS "+-/*^"
 #define X_VAR "xX"
 #define calc(values, x) push(values, x)
@@ -20,6 +32,7 @@ static int eq(char *a, char *b)
     return !strcmp(a, b);
 }
 
+/*
 static void t_dlist_print(t_dlist *dlist)
 {
     return ;
@@ -32,15 +45,13 @@ static void t_dlist_print(t_dlist *dlist)
     printf("\n");
     //printf("dlist content end\n");
 }
-
-
-
-
+*/
 
 static void push(t_dlist *values, double value)
 {
     if (isnan(value) || isinf(value)) {
-
+        fail("calculation error");
+        return;
     }
     double *dbl_storage = ft_memalloc(sizeof(double));
     memcpy(dbl_storage, &value, sizeof(double));
@@ -51,7 +62,10 @@ static void push(t_dlist *values, double value)
  
 static double pop(t_dlist *values)
 {
-	if (!values->size) die("stack underflow\n");
+	if (!values->size) {
+        fail("stack underflow");
+        return 0;
+    } 
     //printf("values size before pop: %d\n", values->size);
     //t_dlist_print(values);
 	t_dlist_node *popped = t_dlist_pop(values, values->head);
@@ -72,11 +86,13 @@ char *answer_to_string(double answ)
     return s;
 }
  
-double rpn(t_dlist *tokens, double x_val)
+t_calc_output rpn(t_dlist *tokens, double x_val)
 {
 	double a, b;
-    t_dlist_node *token = tokens->head;
+    t_dlist_node *token = tokens ? tokens->head : NULL;
     t_dlist *values = t_dlist_new();
+    double value;
+    memset(&output, 0, sizeof(t_calc_output));
 
     char x_str[20];
     sprintf(x_str, "%.7f", x_val);
@@ -88,10 +104,11 @@ double rpn(t_dlist *tokens, double x_val)
         int token_len = strlen(s);
         if (token_len > 1 || isdigit(*s)) {
             if (isdigit(*s) || (*s == '+') || (*s == '-')) {
-                double value = strtod(s, NULL);
+                value = strtod(s, NULL);
                 push(values, value);
             } else {
                 a = pop(values);
+                check_pop();
                 if (eq("cos", s)) calc(values, cos(a));
                 else if (eq("sin", s)) calc(values, sin(a));
                 else if (eq("tan", s)) calc(values, tan(a));
@@ -105,26 +122,31 @@ double rpn(t_dlist *tokens, double x_val)
         } else {
             if (strchr(OPERANDS, *s)) {
                 b = pop(values);
+                check_pop();
                 a = pop(values);
+                check_pop();
                 if (*s == '+')	calc(values, a + b);
                 else if (*s == '-')	calc(values, a - b);
                 else if (*s == '*')	calc(values, a * b);
                 else if (*s == '/')	calc(values, a / b);
                 else if (*s == '^')	calc(values, pow(a, b));
             } else if (strchr(X_VAR, *s)) {
-                free(s);
-                token->data = ft_strdup(x_str);
-                continue ;
+                value = strtod(x_str, NULL);
+                push(values, value);
             }
         }
-        t_dlist_print(values);
+        //t_dlist_print(values);
         token = token->next;
     }
  
-	if (values->size != 1) die("stack leftover\n");
-    double result = pop(values);
-    t_dlist_free(values, t_dlist_node_free_simple);
-	return result;
+	if (values->size != 1) {
+        fail("stack leftover");
+    } else if (tokens) {
+        output.output = pop(values);
+        check_pop();
+        t_dlist_free(values, t_dlist_node_free_simple);
+    }
+	return output;
 }
  
 /*

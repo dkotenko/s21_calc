@@ -89,3 +89,37 @@ int equal(double a, double b)
 	return a - b < EPSILON;
 }
 
+void print_annuity(t_credit_input data, t_credit_output out)
+{
+    char *two = "  ";
+    char *four = "    ";
+    printf("credit with annuity payment:\n");
+    printf("%sinput:\n", two);
+    printf("%stotal credit amount: %lf\n", four, data.amount);
+    printf("%sterm in months: %d\n", four, data.term_in_months);
+    printf("%sinterest rate: %lf\n", four, data.interest_rate);
+    printf("%soutput:\n", two);
+    printf("%smonthly payment: %lf\n", four, out.monthly_payments[0]);
+    printf("%soverpayment: %lf\n", four, out.overpayment);
+    printf("%stotal amount: %lf\n", four, out.total_payment);
+}
+
+void print_differentiated(t_credit_input data, t_credit_output out)
+{
+    char *two = "  ";
+    char *four = "    ";
+    printf("credit with differentiated payment:\n");
+    printf("%sinput:\n", two);
+    printf("%stotal credit amount: %lf\n", four, data.amount);
+    printf("%sterm in months: %d\n", four, data.term_in_months);
+    printf("%sinterest rate: %lf\n", four, data.interest_rate);
+    printf("%soutput:\n", two);
+    printf("%smonthly payments: \n", four);
+    for (int i = 0; i < data.term_in_months; i++) {
+        printf("month %d: %lf\n", i + 1, out.monthly_payments[i]);
+    }
+    printf("%soverpayment: %lf\n", four, out.overpayment);
+    printf("%stotal amount: %lf\n", four, out.total_payment);
+}
+
+
